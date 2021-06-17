@@ -1,0 +1,22 @@
+<launch>
+   <master auto="start"/>
+ <!-- Run the map server --> 
+    <!--<node name="map_server" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/peb3.pgm 0.05"/>-->
+  
+
+    <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/peb3-edited.pgm 0.05"/>
+
+ <!--- Run AMCL --> 
+    <include file="$(find amcl)/examples/amcl_omni.launch" />
+
+ <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!--<param name="controller_frequency" type="int" value="5"/>-->
+
+    <rosparam file="$(find sarg_2dnav)/config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find sarg_2dnav)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find sarg_2dnav)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find sarg_2dnav)/config/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find sarg_2dnav)/config/base_local_planner_params.yaml" command="load" />
+ </node>
+
+</launch>

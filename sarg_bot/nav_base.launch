@@ -1,0 +1,13 @@
+<launch>
+
+	<!-- pioneer start -->
+	<include file="$(find sarg_bot)/p2os_driver.launch"/>
+	<!--<include file="$(find sarg_bot)/teleop_joy.launch"/>-->
+
+	<!-- rplidar start -->
+	<include file="$(find rplidar_ros)/launch/rplidar_a3.launch"/>
+
+	<!-- tf configuration of laser to robot (needs measurement) -->
+	<node pkg="tf" type="static_transform_publisher" name="laser_link" args="0 0 .13 0 0 0  base_link laser 100"/>
+
+</launch>
