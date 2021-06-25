@@ -1,0 +1,9 @@
+obstacle_range: 15.0
+raytrace_range: 5.0
+footprint: [[.36, .25], [.36, -0.25], [-0.29, -0.25], [-0.29, .25]]
+#robot_radius: ir_of_robot
+inflation_radius: 0.30
+
+observation_sources: rplidar
+
+rplidar: {sensor_frame: laser, data_type: LaserScan, topic: scan, marking: true, clearing: true}
