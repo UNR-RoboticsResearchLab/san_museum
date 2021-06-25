@@ -10,12 +10,6 @@
   <!-- launch 2d navigation -->
   <include file="$(find sarg_2dnav)/sarg_2dnav.launch"/>
 
-  <!-- choose map -->
-  <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/peb3.yaml"/> -->
-  <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/3rd.yaml"/> -->
-  <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/upper.yaml"/> -->
-  <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/peb3-edited.yaml"/>
-
 	<!-- launch simulation -->
   <include file="$(find sarg_bot)/p2os_peb3-edited.launch"/>
 

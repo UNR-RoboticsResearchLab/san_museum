@@ -4,6 +4,12 @@
   <!-- use sim time for /clock -->
   <param name="use_sim_time" value="true"/>
 
+  <!-- choose map -->
+  <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/peb3.yaml"/> -->
+  <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/3rd.yaml"/> -->
+  <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/upper.yaml"/> -->
+  <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/peb3-edited.yaml"/>
+
   <!--- Run AMCL -->
   <include file="$(find amcl)/examples/amcl_omni.launch" />
 

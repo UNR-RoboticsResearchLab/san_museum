@@ -224,9 +224,7 @@ floorplan
   size [200.000 200.000 1.000]
   pose [100.000 100.000 0.000 0.000]
 
-  # choose between normal world leg detection test world
-  # bitmap "peb3-edited.pgm"
-  bitmap "peb3-edited-legs.pgm"
+  bitmap "peb3-edited.pgm"
 )
 
 define leg model
