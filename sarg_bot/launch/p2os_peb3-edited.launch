@@ -8,6 +8,6 @@
   <arg name="p2os_driver" value="1"/>
 
   <!-- start stage in the given world -->
-  <param name="includeFile" value="$(find sarg_2dnav)/peb3-edited.world" type="str"/>
-  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find sarg_2dnav)/peb3-edited.world"/>
+  <param name="includeFile" value="$(find sarg_2dnav)/maps/stageworlds/peb3-edited.world" type="str"/>
+  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find sarg_2dnav)/maps/stageworlds/peb3-edited.world"/>
 </launch>
