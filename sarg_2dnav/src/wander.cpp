@@ -3,14 +3,12 @@
 #include <ros/ros.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
-#include <ros/time.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <vector>
 
 double poseAMCLx, poseAMCLy;
 bool goalReached = false;
 // how different a new location has to be from a failed one
-double locationThreshold = 1;
+double locationThreshold = 0.5;
 
 bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> pastLocations);
 bool goToGoal (double x, double y);
@@ -18,13 +16,6 @@ void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & ms
 
 int main (int argc, char ** argv)
 {
-  /*
-    // predefined locations for the robot to travel to
-    int locations = 3;
-    int coordinates [locations][2] = {{-99, -82}, {-104, -60}, {-86, -154}};
-    int choice;
-  */
-
   ros::init (argc, argv, "wander");
   ros::NodeHandle n;
 
@@ -40,14 +31,7 @@ int main (int argc, char ** argv)
   srand (time (NULL));
 
   // a previous location that did not have a path
-  //double badLocationX, badLocationY;
   std::vector <std::vector <double>> badLocations;
-
-  // choose a random predefined location to set a path to
-  //int choice = rand () % locations;
-
-  // set a path to goal and take it
-  //goalReached = goToGoal (coordinates [choice][0], coordinates [choice][1]);
 
   while (ros::ok ())
   {
@@ -62,16 +46,18 @@ int main (int argc, char ** argv)
     // how random the new goal will be
     int randomness = 10;
     // multiplier to randomness (this is done because you cant modulo a double)
-    double scale = 0;
+    double scale = 0.25;
 
     // set a goal to a location relative to the current pose
     do
     {
-      ROS_INFO ("finding suitable goal...");
+      //ROS_INFO ("finding suitable goal...");
 
       // randomness is multiplied and subtracted to include negative values
       xGoal = currentX + scale * ((rand () % (randomness * 2)) - (randomness));
       yGoal = currentY + scale * ((rand () % (randomness * 2)) - (randomness));
+
+      //ROS_INFO ("goal: (%f, %f)", xGoal, yGoal);
 
       // increase multiplier to avoid an infinite loop
       scale += 0.01;
@@ -79,11 +65,10 @@ int main (int argc, char ** argv)
       // maximum value for scale so the goal isnt too far away
       if (scale > 0.5)
       {
-        scale = 0;
+        scale = 0.25;
       }
     }
     // if goal is too close to current or failed location, find a new goal
-    //while ((xGoal - badLocationX < locationThreshold && yGoal - badLocationY < locationThreshold) || (xGoal - currentX < locationThreshold && yGoal - currentY < locationThreshold));
     while (!goalIsOk (xGoal, yGoal, currentX, currentY, badLocations));
     goalReached = goToGoal (xGoal, yGoal);
 
@@ -117,16 +102,16 @@ int main (int argc, char ** argv)
 
 bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> pastLocations)
 {
-  if (goalX - nowX < locationThreshold && goalY - nowY < locationThreshold)
+  if (abs (goalX - nowX) < locationThreshold && abs (goalY - nowY) < locationThreshold)
   {
-    ROS_INFO ("goal not ok, too close to current location");
+    //ROS_INFO ("goal not ok, too close to current location");
     return false;
   }
   for (int index = 0; index < pastLocations.size (); index++)
   {
-    if (goalX - pastLocations.at (index).at (0) < locationThreshold && goalY - pastLocations.at (index).at (1) < locationThreshold)
+    if (abs (goalX - pastLocations.at (index).at (0)) < locationThreshold && abs (goalY - pastLocations.at (index).at (1)) < locationThreshold)
     {
-      ROS_INFO ("goal not ok, too close to failed location");
+      //ROS_INFO ("goal not ok, too close to failed location");
       return false;
     }
   }
