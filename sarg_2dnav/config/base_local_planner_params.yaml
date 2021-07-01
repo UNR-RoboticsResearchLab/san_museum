@@ -13,3 +13,6 @@ TrajectoryPlannerROS:
   yaw_goal_tolerance: 6.283
   xy_goal_tolerance: 0.5
   latch_xy_goal_tolerance: true
+
+  recovery_behavior_enabled: false
+  clearing_rotation_allowed: false
