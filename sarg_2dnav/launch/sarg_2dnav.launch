@@ -2,10 +2,10 @@
   <master auto="start" />
 
   <!-- use sim time for /clock -->
-  <param name="use_sim_time" value="true"/>
+  <!--<param name="use_sim_time" value="true"/>-->
 
   <!-- set leg detector fixed frame -->
-  <param name="/leg_detector/fixed_frame" value="base_laser_link"/>
+  <!--<param name="/leg_detector/fixed_frame" value="base_laser_link"/>-->
 
   <!-- choose map -->
   <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/peb3.yaml"/> -->
