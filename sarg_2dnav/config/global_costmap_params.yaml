@@ -3,4 +3,8 @@ global_costmap:
   robot_base_frame: base_link
   update_frequency: 5.0
   #set to true when you have a map made
-  static_map: true
+
+
+plugins:
+#  - {name: obstacles,   type: "costmap_2d::VoxelLayer"}
+  - {name: static_map,  type: "costmap_2d::StaticLayer"}

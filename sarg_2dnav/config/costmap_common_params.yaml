@@ -4,6 +4,18 @@ footprint: [[.36, .25], [.36, -0.25], [-0.29, -0.25], [-0.29, .25]]
 #robot_radius: ir_of_robot
 inflation_radius: 0.30
 
-observation_sources: base_scan
+#observation_sources: base_scan
 
-base_scan: {sensor_frame: base_laser_link, data_type: LaserScan, topic: base_scan, marking: true, clearing: true}
+#base_scan: {sensor_frame: base_laser_link, data_type: LaserScan, topic: base_scan, marking: true, clearing: true}
+plugins:
+  - {name: obstacles,   type: "costmap_2d::VoxelLayer"}
+  - {name: static_map,  type: "costmap_2d::StaticLayer"}
+  - {name: inflation,  type: "costmap_2d::InflationLayer"}
+
+
+inflation:
+  inflation_radius: 0.3
+
+obstacles:
+  observation_sources: base_scan
+  base_scan: {data_type: LaserScan, sensor_frame: base_laser_link, clearing: true, marking: true, topic: /base_scan}
