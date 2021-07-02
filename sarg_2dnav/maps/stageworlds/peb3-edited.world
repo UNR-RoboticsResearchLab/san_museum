@@ -1,5 +1,6 @@
 # time to pause (in GUI mode) or quit (in headless mode (-g)) the simulation
 quit_time 3600 # 1 hour of simulated time
+speedup 5 # simulate at 5 times speed (probably doesnt work)
 
 #resolution 0.02
 resolution 0.1

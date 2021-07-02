@@ -7,6 +7,7 @@
 double poseAMCLx, poseAMCLy;
 bool goalReached = false;
 // how different a new location has to be from a failed goal, previous location, or current location
+// setting this too high will cause an infinite loop
 double locationThreshold = 0.5;
 /*
   // client for pathmaking service
@@ -52,7 +53,7 @@ int main (int argc, char ** argv)
     double currentX = poseAMCLx;
     double currentY = poseAMCLy;
 
-    ROS_INFO ("current location: (%f, %f)", currentX, currentY);
+    ROS_INFO ("currently at: (%f, %f)", currentX, currentY);
 
     double xGoal;
     double yGoal;
@@ -65,9 +66,10 @@ int main (int argc, char ** argv)
 
     // set a goal to a location relative to the current pose
     ROS_INFO ("finding suitable goal...");
+
+    // maybe also make the program exit after too many path fails? (prevent hang)
     do
     {
-
       // randomness is multiplied and subtracted to include negative values
       xGoal = currentX + scale * ((rand () % (randomness * 2)) - (randomness));
       yGoal = currentY + scale * ((rand () % (randomness * 2)) - (randomness));
@@ -91,7 +93,7 @@ int main (int argc, char ** argv)
 
     if (goalReached)
     {
-      ROS_INFO ("goal reached");
+      ROS_INFO ("goal reached\n");
 
       std::vector <double> tempPreviousGoal;
       for (int index = 0; index < 2; index++)
@@ -106,7 +108,7 @@ int main (int argc, char ** argv)
 
     else
     {
-      ROS_INFO ("goal not reached");
+      ROS_INFO ("goal not reached\n");
 
       // i think this approach doesnt make a distinction between a goal failure from the global or local planner
       // maybe add something to only store goals failed by global planner?
@@ -133,10 +135,6 @@ int main (int argc, char ** argv)
 // check if the goal is too close to current location, a failed goal, or a previous location
 bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> failedLocations, std::vector <std::vector <double>> successfulLocations)
 {
-  // how many past locations should be "remembered"
-  // setting this too high might cause the robot to never find a new path
-  int locationMemory = 100;
-
   // if goal is too close too current location
   if (abs (goalX - nowX) < locationThreshold && abs (goalY - nowY) < locationThreshold)
   {
@@ -155,12 +153,11 @@ bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector
     }
   }
 
-  // for every previous location, but "forget" locations too far in the past (locationMemory)
-  // traverse backwards since push_back adds to the end of a vector
-  for (int index = successfulLocations.size (); index > successfulLocations.size () - locationMemory; index--)
+  // for every previous location
+  for (int index = 0; index < successfulLocations.size (); index++)
   {
     // if goal is too close to a previous location
-    if (abs (goalX - successfulLocations.at (index - 1).at (0)) < locationThreshold * 5 && abs (goalY - successfulLocations.at (index - 1).at (1)) < locationThreshold * 5)
+    if (abs (goalX - successfulLocations.at (index).at (0)) < locationThreshold && abs (goalY - successfulLocations.at (index).at (1)) < locationThreshold)
     {
       //ROS_INFO ("goal not ok, too close to previous location");
       return false;
@@ -218,12 +215,12 @@ bool goToGoal (double x, double y)
 
   if (ac.getState () == actionlib::SimpleClientGoalState::SUCCEEDED)
   {
-   ROS_INFO ("robot reached the destination");
+   //ROS_INFO ("robot reached the destination");
    return true;
   }
   else
   {
-   ROS_INFO("robot did not reach the destination");
+   //ROS_INFO("robot did not reach the destination");
    return false;
   }
 }
