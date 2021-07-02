@@ -10,7 +10,7 @@ bool goalReached = false;
 // how different a new location has to be from a failed one
 double locationThreshold = 0.5;
 
-bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> pastLocations);
+bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> failedLocations, std::vector <std::vector <double>> successfulLocations);
 bool goToGoal (double x, double y);
 void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & msgAMCL);
 
@@ -22,17 +22,20 @@ int main (int argc, char ** argv)
   // subscribe to amcl pose to get estimated robot position
   ros::Subscriber amcl_sub = n.subscribe ("amcl_pose", 100, amclCallback);
 
-  // spinOnce has to be called twice before getting correct pose, there's probably a better way to do this
   ros::Rate loop_rate (10);
   ros::spinOnce ();
   loop_rate.sleep();
+  // spinOnce has to be called twice before getting correct pose, there's probably a better way to do this
   ros::spinOnce ();
 
   srand (time (NULL));
 
-  // a previous location that did not have a path
+  // previous locations that did not have a path
   std::vector <std::vector <double>> badLocations;
+  // previous locations that did have a path
+  std::vector <std::vector <double>> previousLocations;
 
+  // loop until ctrl-c is pressed or ros::shutdown is called
   while (ros::ok ())
   {
     double currentX = poseAMCLx;
@@ -49,9 +52,9 @@ int main (int argc, char ** argv)
     double scale = 0.25;
 
     // set a goal to a location relative to the current pose
+    ROS_INFO ("finding suitable goal...");
     do
     {
-      //ROS_INFO ("finding suitable goal...");
 
       // randomness is multiplied and subtracted to include negative values
       xGoal = currentX + scale * ((rand () % (randomness * 2)) - (randomness));
@@ -69,12 +72,22 @@ int main (int argc, char ** argv)
       }
     }
     // if goal is too close to current or failed location, find a new goal
-    while (!goalIsOk (xGoal, yGoal, currentX, currentY, badLocations));
+    while (!goalIsOk (xGoal, yGoal, currentX, currentY, badLocations, previousLocations));
     goalReached = goToGoal (xGoal, yGoal);
 
     if (goalReached)
     {
       ROS_INFO ("goal reached");
+
+      std::vector <double> tempPreviousGoal;
+      for (int index = 0; index < 2; index++)
+      {
+        // remember this successful goal
+        tempPreviousGoal.push_back (xGoal);
+        tempPreviousGoal.push_back (yGoal);
+      }
+
+      previousLocations.push_back (tempPreviousGoal);
     }
 
     else
@@ -100,18 +113,31 @@ int main (int argc, char ** argv)
   return 0;
 }
 
-bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> pastLocations)
+bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> failedLocations, std::vector <std::vector <double>> successfulLocations)
 {
+  // how many past locations should be "remembered"
+  int locationMemory = 100;
+
   if (abs (goalX - nowX) < locationThreshold && abs (goalY - nowY) < locationThreshold)
   {
     //ROS_INFO ("goal not ok, too close to current location");
     return false;
   }
-  for (int index = 0; index < pastLocations.size (); index++)
+
+  for (int index = 0; index < failedLocations.size (); index++)
   {
-    if (abs (goalX - pastLocations.at (index).at (0)) < locationThreshold && abs (goalY - pastLocations.at (index).at (1)) < locationThreshold)
+    if (abs (goalX - failedLocations.at (index).at (0)) < locationThreshold && abs (goalY - failedLocations.at (index).at (1)) < locationThreshold)
     {
       //ROS_INFO ("goal not ok, too close to failed location");
+      return false;
+    }
+  }
+
+  for (int index = successfulLocations.size (); index > successfulLocations.size () - locationMemory; index--)
+  {
+    if (abs (goalX - successfulLocations.at (index - 1).at (0)) < locationThreshold * 5 && abs (goalY - successfulLocations.at (index - 1).at (1)) < locationThreshold * 5)
+    {
+      //ROS_INFO ("goal not ok, too close to previous location");
       return false;
     }
   }
