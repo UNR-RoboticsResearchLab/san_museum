@@ -2,17 +2,20 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <nav_msgs/GetPlan.h>
 
 double poseAMCLx, poseAMCLy;
 bool goalReached = false;
 // how different a new location has to be from a failed goal, previous location, or current location
 // setting this too high will cause an infinite loop
-double locationThreshold = 0.5;
+double locationThreshold = 1;
 
-bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> failedLocations, std::vector <std::vector <double>> successfulLocations);
+bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> successfulLocations);
 bool goToGoal (double x, double y);
 void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & msgAMCL);
-void saveGoal (double x, double y, std::vector <std::vector <double>> destination);
+void saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity);
+void fillPathRequest (nav_msgs::GetPlan::Request & request, float start_x, float start_y, float goal_x, float goal_y);
+bool callPlanningService (ros::ServiceClient & serviceClient, nav_msgs::GetPlan & srv);
 
 int main (int argc, char ** argv)
 {
@@ -22,7 +25,7 @@ int main (int argc, char ** argv)
   //ROS_INFO ("created nodehandle n");
 
   // subscribe to amcl pose to get estimated robot position
-  ros::Subscriber amcl_sub = n.subscribe ("amcl_pose", 100, amclCallback);
+  ros::Subscriber amclSub = n.subscribe ("amcl_pose", 100, amclCallback);
   //ROS_INFO ("subscribed to amcl_pose");
 
   ros::Rate loop_rate (10);
@@ -34,17 +37,20 @@ int main (int argc, char ** argv)
   // seed for random number generator
   srand (time (NULL));
 
+  // maximum attempts to find a goal (stop infinite loop)
+  int maxTries = 1000;
+
   // previous locations that did not have a path
-  std::vector <std::vector <double>> badLocations;
+  // this is no longer needed since the planner is now checked
+  //std::vector <std::vector <double>> badLocations;
   // previous locations that did have a path
   std::vector <std::vector <double>> previousLocations;
 
   // loop until ctrl-c is pressed or ros::shutdown is called
   while (ros::ok ())
   {
-    // get current location
-
-    ROS_INFO ("currently at: (%f, %f)", poseAMCLx, poseAMCLy);
+    // check current location
+    ROS_INFO ("pose: (%f, %f)", poseAMCLx, poseAMCLy);
 
     double xGoal;
     double yGoal;
@@ -54,13 +60,17 @@ int main (int argc, char ** argv)
     // multiplier to randomness (this is done because you cant modulo a double)
     double initialScale = 0.25;
     double scale = initialScale;
+    // attempt counter
+    int tries = 0;
 
     // set a goal to a location relative to the current pose
     ROS_INFO ("finding suitable goal...");
 
-    // maybe also make the program exit after too many path fails? (prevent hang)
     do
     {
+      // increase attempt counter by 1
+      tries += 1;
+
       // randomness is multiplied and subtracted to include negative values
       xGoal = poseAMCLx + scale * ((rand () % (randomness * 2)) - (randomness));
       yGoal = poseAMCLy + scale * ((rand () % (randomness * 2)) - (randomness));
@@ -75,9 +85,15 @@ int main (int argc, char ** argv)
       {
         scale = initialScale;
       }
+
+      if (tries > maxTries)
+      {
+        ROS_INFO ("could not find goal after %d tries", maxTries);
+        return 1;
+      }
     }
     // if goal is too close to current or failed location, find a new goal
-    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, badLocations, previousLocations));
+    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, previousLocations));
 
     // try to see if a path can be make to the goal
     goalReached = goToGoal (xGoal, yGoal);
@@ -85,17 +101,15 @@ int main (int argc, char ** argv)
     if (goalReached)
     {
       ROS_INFO ("goal reached\n");
-
-      saveGoal (xGoal, yGoal, previousLocations);
+      saveGoal (xGoal, yGoal, previousLocations, true);
     }
 
     else
     {
       ROS_INFO ("goal not reached\n");
 
-      // i think this approach doesnt make a distinction between a goal failure from the global or local planner
-      // maybe add something to only store goals failed by global planner?
-      saveGoal (xGoal, yGoal, badLocations);
+      // this is no longer needed since the planner is now checked
+      //saveGoal (xGoal, yGoal, badLocations, false);
     }
 
     // get new position data
@@ -107,8 +121,22 @@ int main (int argc, char ** argv)
 }
 
 // check if the goal is too close to current location, a failed goal, or a previous location
-bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> failedLocations, std::vector <std::vector <double>> successfulLocations)
+bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> successfulLocations)
 {
+  ros::NodeHandle goalCheckNode;
+  ros::ServiceClient planClient = goalCheckNode.serviceClient <nav_msgs::GetPlan> ("move_base/make_plan", true);
+  nav_msgs::GetPlan planSrv;
+
+  // fill in the request for make_plan service
+  fillPathRequest (planSrv.request, poseAMCLx, poseAMCLy, goalX, goalY);
+
+  // if make_plan cannot find a plan
+  if (!callPlanningService (planClient, planSrv))
+  {
+    //ROS_INFO ("goal not ok, no path from planner");
+    return false;
+  }
+
   // if goal is too close too current location
   if (abs (goalX - nowX) < locationThreshold && abs (goalY - nowY) < locationThreshold)
   {
@@ -116,18 +144,23 @@ bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector
     return false;
   }
 
-  // for every failed goal so far
-  for (int index = 0; index < failedLocations.size (); index++)
-  {
-    // if goal is too close to a failed goal
-    if (abs (goalX - failedLocations.at (index).at (0)) < locationThreshold && abs (goalY - failedLocations.at (index).at (1)) < locationThreshold)
+  /*
+    // this is no longer needed since the planner is now checked
+
+    // for every failed goal so far
+    for (int index = 0; index < failedLocations.size (); index++)
     {
-      //ROS_INFO ("goal not ok, too close to failed location");
-      return false;
+      // if goal is too close to a failed goal
+      if (abs (goalX - failedLocations.at (index).at (0)) < locationThreshold && abs (goalY - failedLocations.at (index).at (1)) < locationThreshold)
+      {
+        //ROS_INFO ("goal not ok, too close to failed location");
+        return false;
+      }
     }
-  }
+  */
 
   // for every previous location
+  // this doesnt look like its working anymore and i dont know why
   for (int index = 0; index < successfulLocations.size (); index++)
   {
     // if goal is too close to a previous location
@@ -170,7 +203,11 @@ bool goToGoal (double x, double y)
   goal.target_pose.pose.orientation.z = 0.0;
   goal.target_pose.pose.orientation.w = 1.0;
 
-  ROS_INFO ("sending goal location: (%f, %f)", x, y);
+  ROS_INFO ("goal: (%f, %f)", x, y);
+
+  /*
+    CHANGE FROM JUST SENDGOAL TO MAKEPLAN !!
+  */
 
   ac.sendGoal (goal);
   ac.waitForResult ();
@@ -195,8 +232,16 @@ void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & ms
   poseAMCLy = msgAMCL -> pose.pose.position.y;
 }
 
-void saveGoal (double x, double y, std::vector <std::vector <double>> destination)
+void saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity)
 {
+  // max amount of goals to store if a vector has a "max capacity"
+  int maxGoals = 5;
+
+  if (destination.size () > maxGoals && hasCapacity)
+  {
+    destination.erase (destination.begin (), destination. begin());
+  }
+
   std::vector <double> tempGoal;
   for (int index = 0; index < 2; index++)
   {
@@ -206,4 +251,37 @@ void saveGoal (double x, double y, std::vector <std::vector <double>> destinatio
   }
 
   destination.push_back (tempGoal);
+}
+
+// from https://www.programmersought.com/article/85495009501/
+void fillPathRequest (nav_msgs::GetPlan::Request & request, float start_x, float start_y, float goal_x, float goal_y)
+{
+  request.start.header.frame_id = "map";
+  request.start.pose.position.x = start_x;
+  request.start.pose.position.y = start_y;
+  request.start.pose.orientation.w = 1.0;
+  request.goal.header.frame_id = "map";
+  request.goal.pose.position.x = goal_x;
+  request.goal.pose.position.y = goal_y;
+  request.goal.pose.orientation.w = 1.0;
+  request.tolerance = 0.0;
+}
+
+// from https://www.programmersought.com/article/85495009501/
+bool callPlanningService (ros::ServiceClient & serviceClient, nav_msgs::GetPlan & srv)
+{
+  // perform the actual path planner call
+  // execute the actual path planner
+  if (serviceClient.call (srv))
+  {
+    // srv.response.plan.poses is the container for storing the results, traversed and taken out
+    if (!srv.response.plan.poses.empty ())
+    {
+      // std::for_each(srv.response.plan.poses.begin(),srv.response.plan.poses.end(),myfunction);
+      //ROS_INFO ("make_plan success");
+      return true;
+    }
+  }
+
+  return false;
 }
