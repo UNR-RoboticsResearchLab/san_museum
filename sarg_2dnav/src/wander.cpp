@@ -2,36 +2,28 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-//#include <nav_msgs/GetPlan.h>
 
 double poseAMCLx, poseAMCLy;
 bool goalReached = false;
 // how different a new location has to be from a failed goal, previous location, or current location
 // setting this too high will cause an infinite loop
 double locationThreshold = 0.5;
-/*
-  // client for pathmaking service
-  ros::ServiceClient pathClient;
-  nav_msgs::GetPlan planService;
-*/
 
 bool goalIsOk (double goalX, double goalY, double nowX, double nowY, std::vector <std::vector <double>> failedLocations, std::vector <std::vector <double>> successfulLocations);
 bool goToGoal (double x, double y);
 void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & msgAMCL);
+void saveGoal (double x, double y, std::vector <std::vector <double>> destination);
 
 int main (int argc, char ** argv)
 {
   ros::init (argc, argv, "wander");
+  //ROS_INFO ("initialized node");
   ros::NodeHandle n;
+  //ROS_INFO ("created nodehandle n");
 
   // subscribe to amcl pose to get estimated robot position
   ros::Subscriber amcl_sub = n.subscribe ("amcl_pose", 100, amclCallback);
-
-  /*
-    pathClient = n.serviceClient <nav_msgs::GetPlan> ("move_base/make_plan");
-
-    planService.request.tolerance = 1.5;
-  */
+  //ROS_INFO ("subscribed to amcl_pose");
 
   ros::Rate loop_rate (10);
   ros::spinOnce ();
@@ -39,6 +31,7 @@ int main (int argc, char ** argv)
   // spinOnce has to be called twice before getting correct pose, there's probably a better way to do this
   ros::spinOnce ();
 
+  // seed for random number generator
   srand (time (NULL));
 
   // previous locations that did not have a path
@@ -50,10 +43,8 @@ int main (int argc, char ** argv)
   while (ros::ok ())
   {
     // get current location
-    double currentX = poseAMCLx;
-    double currentY = poseAMCLy;
 
-    ROS_INFO ("currently at: (%f, %f)", currentX, currentY);
+    ROS_INFO ("currently at: (%f, %f)", poseAMCLx, poseAMCLy);
 
     double xGoal;
     double yGoal;
@@ -71,8 +62,8 @@ int main (int argc, char ** argv)
     do
     {
       // randomness is multiplied and subtracted to include negative values
-      xGoal = currentX + scale * ((rand () % (randomness * 2)) - (randomness));
-      yGoal = currentY + scale * ((rand () % (randomness * 2)) - (randomness));
+      xGoal = poseAMCLx + scale * ((rand () % (randomness * 2)) - (randomness));
+      yGoal = poseAMCLy + scale * ((rand () % (randomness * 2)) - (randomness));
 
       //ROS_INFO ("goal: (%f, %f)", xGoal, yGoal);
 
@@ -86,7 +77,7 @@ int main (int argc, char ** argv)
       }
     }
     // if goal is too close to current or failed location, find a new goal
-    while (!goalIsOk (xGoal, yGoal, currentX, currentY, badLocations, previousLocations));
+    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, badLocations, previousLocations));
 
     // try to see if a path can be make to the goal
     goalReached = goToGoal (xGoal, yGoal);
@@ -95,15 +86,7 @@ int main (int argc, char ** argv)
     {
       ROS_INFO ("goal reached\n");
 
-      std::vector <double> tempPreviousGoal;
-      for (int index = 0; index < 2; index++)
-      {
-        // remember this successful goal
-        tempPreviousGoal.push_back (xGoal);
-        tempPreviousGoal.push_back (yGoal);
-      }
-
-      previousLocations.push_back (tempPreviousGoal);
+      saveGoal (xGoal, yGoal, previousLocations);
     }
 
     else
@@ -112,16 +95,7 @@ int main (int argc, char ** argv)
 
       // i think this approach doesnt make a distinction between a goal failure from the global or local planner
       // maybe add something to only store goals failed by global planner?
-
-      std::vector <double> tempBadGoal;
-      for (int index = 0; index < 2; index++)
-      {
-        // remember this failed goal
-        tempBadGoal.push_back (xGoal);
-        tempBadGoal.push_back (yGoal);
-      }
-
-      badLocations.push_back (tempBadGoal);
+      saveGoal (xGoal, yGoal, badLocations);
     }
 
     // get new position data
@@ -196,21 +170,9 @@ bool goToGoal (double x, double y)
   goal.target_pose.pose.orientation.z = 0.0;
   goal.target_pose.pose.orientation.w = 1.0;
 
-  //planService.request.goal = goal.target_pose;
-
   ROS_INFO ("sending goal location: (%f, %f)", x, y);
 
-  /*
-    // if plan can be made
-    bool callResult = pathClient.call (planService) ? 1 : 0;
-    ROS_INFO("Make plan: %d", (callResult));
-    if (pathClient.call (callResult))
-  */
-  {
-    ac.sendGoal (goal);
-  }
-
-
+  ac.sendGoal (goal);
   ac.waitForResult ();
 
   if (ac.getState () == actionlib::SimpleClientGoalState::SUCCEEDED)
@@ -218,6 +180,7 @@ bool goToGoal (double x, double y)
    //ROS_INFO ("robot reached the destination");
    return true;
   }
+
   else
   {
    //ROS_INFO("robot did not reach the destination");
@@ -230,22 +193,17 @@ void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & ms
 {
   poseAMCLx = msgAMCL -> pose.pose.position.x;
   poseAMCLy = msgAMCL -> pose.pose.position.y;
+}
 
-  /*
-    move_base_msgs::MoveBaseGoal current;
+void saveGoal (double x, double y, std::vector <std::vector <double>> destination)
+{
+  std::vector <double> tempGoal;
+  for (int index = 0; index < 2; index++)
+  {
+    // remember this successful goal
+    tempGoal.push_back (x);
+    tempGoal.push_back (y);
+  }
 
-    // create a message to send to planService, there has to be a better way to do this
-    current.target_pose.header.frame_id = "map";
-    current.target_pose.header.stamp = ros::Time::now ();
-
-    current.target_pose.pose.position.x =  poseAMCLx;
-    current.target_pose.pose.position.y =  poseAMCLy;
-    current.target_pose.pose.position.z =  0.0;
-    current.target_pose.pose.orientation.x = 0.0;
-    current.target_pose.pose.orientation.y = 0.0;
-    current.target_pose.pose.orientation.z = 0.0;
-    current.target_pose.pose.orientation.w = 1.0;
-
-    planService.request.goal = current.target_pose;
-  */
+  destination.push_back (tempGoal);
 }

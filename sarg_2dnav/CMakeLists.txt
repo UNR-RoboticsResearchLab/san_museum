@@ -13,7 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   actionlib
   geometry_msgs
-  #nav_msgs
 )
 
 ## System dependencies are found with CMake's conventions
