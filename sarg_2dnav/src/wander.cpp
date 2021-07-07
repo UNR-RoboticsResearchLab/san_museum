@@ -13,7 +13,7 @@ double locationThreshold = 1;
 bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std::vector <std::vector <double>> successfulLocations);
 bool goToGoal (double x, double y);
 void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage);
-void saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity);
+std::vector <std::vector <double>> saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity);
 void fillPathRequest (nav_msgs::GetPlan::Request & request, double startX, double startY, double goalX, double goalY);
 bool callPlanningService (ros::ServiceClient & serviceClient, nav_msgs::GetPlan & serviceMessage);
 
@@ -98,7 +98,7 @@ int main (int argc, char ** argv)
     if (goalReached)
     {
       ROS_INFO ("goal reached\n");
-      saveGoal (xGoal, yGoal, previousLocations, true);
+      previousLocations = saveGoal (xGoal, yGoal, previousLocations, true);
     }
 
     else
@@ -139,7 +139,6 @@ bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std
   }
 
   // for every previous location
-  // this doesnt look like its working anymore and i dont know why
   for (int index = 0; index < successfulLocations.size (); index++)
   {
     // if goal is too close to a previous location
@@ -208,15 +207,10 @@ void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AM
   poseAMCLy = AMCLmessage -> pose.pose.position.y;
 }
 
-void saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity)
+std::vector <std::vector <double>> saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity)
 {
   // max amount of goals to store if a vector has a "max capacity"
   int maxGoals = 25;
-
-  if (destination.size () > maxGoals && hasCapacity)
-  {
-    destination.erase (destination.begin (), destination. begin());
-  }
 
   std::vector <double> tempGoal;
   for (int index = 0; index < 2; index++)
@@ -227,6 +221,14 @@ void saveGoal (double x, double y, std::vector <std::vector <double>> destinatio
   }
 
   destination.push_back (tempGoal);
+
+  // delete the oldest goal to maintain max capacity
+  if (destination.size () > maxGoals && hasCapacity)
+  {
+    destination.erase (destination.begin ());
+  }
+
+  return destination;
 }
 
 // from https://www.programmersought.com/article/85495009501/
