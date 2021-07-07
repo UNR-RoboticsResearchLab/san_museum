@@ -4,14 +4,48 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/GetPlan.h>
 
-double poseAMCLx, poseAMCLy;
-
 bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std::vector <std::vector <double>> successfulLocations);
 bool goToGoal (double x, double y);
 void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage);
 std::vector <std::vector <double>> saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity);
 void fillPathRequest (nav_msgs::GetPlan::Request & request, double startX, double startY, double goalX, double goalY);
 bool callPlanningService (ros::ServiceClient & serviceClient, nav_msgs::GetPlan & serviceMessage);
+
+class poseListener
+{
+  private:
+    std::vector <double> poseAMCL;
+
+  public:
+    double getPoseX ();
+    double getPoseY ();
+
+    void setPose (double x, double y);
+
+    void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage);
+};
+
+double poseListener::getPoseX ()
+{
+  return poseAMCL.at (0);
+}
+
+double poseListener::getPoseY ()
+{
+  return poseAMCL.at (1);
+}
+
+void poseListener::setPose (double x, double y)
+{
+  poseAMCL.clear ();
+  poseAMCL.push_back (x);
+  poseAMCL.push_back (y);
+}
+
+void poseListener::amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage)
+{
+  setPose (AMCLmessage -> pose.pose.position.x, AMCLmessage -> pose.pose.position.y);
+}
 
 int main (int argc, char ** argv)
 {
@@ -20,8 +54,10 @@ int main (int argc, char ** argv)
   ros::NodeHandle wanderNode;
   //ROS_DEBUG ("created nodehandle n");
 
+  poseListener currentPose;
+
   // subscribe to amcl pose to get estimated robot position
-  ros::Subscriber amclSub = wanderNode.subscribe ("amcl_pose", 100, amclCallback);
+  ros::Subscriber amclSub = wanderNode.subscribe ("amcl_pose", 100, & poseListener::amclCallback, & currentPose);
   //ROS_DEBUG ("subscribed to amcl_pose");
 
   ros::Rate loop_rate (10);
@@ -43,6 +79,9 @@ int main (int argc, char ** argv)
   while (ros::ok ())
   {
     // check current location
+    double poseAMCLx = currentPose.getPoseX ();
+    double poseAMCLy = currentPose.getPoseY ();
+
     ROS_DEBUG ("pose: (%f, %f)", poseAMCLx, poseAMCLy);
 
     // goal coordinates
@@ -206,14 +245,6 @@ bool goToGoal (double x, double y)
   }
 }
 
-// from https://answers.ros.org/question/248046/subscribing-to-amcl-pose/
-void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage)
-{
-  // get x and y coordinates from AMCL
-  poseAMCLx = AMCLmessage -> pose.pose.position.x;
-  poseAMCLy = AMCLmessage -> pose.pose.position.y;
-}
-
 std::vector <std::vector <double>> saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity)
 {
   // max amount of goals to store if a vector has a "max capacity"
@@ -222,6 +253,7 @@ std::vector <std::vector <double>> saveGoal (double x, double y, std::vector <st
   int maxGoals = 25;
 
   std::vector <double> tempGoal;
+
   for (int index = 0; index < 2; index++)
   {
     // add coordinates to temporary goal vector
