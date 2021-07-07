@@ -5,10 +5,6 @@
 #include <nav_msgs/GetPlan.h>
 
 double poseAMCLx, poseAMCLy;
-bool goalReached = false;
-// how different a new location has to be from a failed goal, previous location, or current location
-// setting this too high will make it too hard for a new goal to be found
-double locationThreshold = 1;
 
 bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std::vector <std::vector <double>> successfulLocations);
 bool goToGoal (double x, double y);
@@ -49,8 +45,12 @@ int main (int argc, char ** argv)
     // check current location
     ROS_DEBUG ("pose: (%f, %f)", poseAMCLx, poseAMCLy);
 
+    // goal coordinates
     double xGoal;
     double yGoal;
+
+    // whether or not the goal has been reached
+    bool goalReached = false;
 
     // how random the new goal will be
     int randomness = 10;
@@ -83,6 +83,8 @@ int main (int argc, char ** argv)
         scale = initialScale;
       }
 
+
+      // after too many failed attempts
       if (tries > maxTries)
       {
         ROS_FATAL ("could not find goal after %d tries", maxTries);
@@ -121,8 +123,12 @@ bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std
   ros::ServiceClient planClient = goalCheckNode.serviceClient <nav_msgs::GetPlan> ("move_base/make_plan", true);
   nav_msgs::GetPlan planSrv;
 
+  // how different a new location has to be from a failed goal, previous location, or current location
+  // setting this too high will make it too hard for a new goal to be found
+  double locationThreshold = 1;
+
   // fill in the request for make_plan service
-  fillPathRequest (planSrv.request, poseAMCLx, poseAMCLy, goalX, goalY);
+  fillPathRequest (planSrv.request, currentX, currentY, goalX, goalY);
 
   // if make_plan cannot find a plan
   if (!callPlanningService (planClient, planSrv))
@@ -172,7 +178,7 @@ bool goToGoal (double x, double y)
   goal.target_pose.header.frame_id = "map";
   goal.target_pose.header.stamp = ros::Time::now ();
 
-  // moving towards the goal
+  // set goal coordinates
   goal.target_pose.pose.position.x =  x;
   goal.target_pose.pose.position.y =  y;
   goal.target_pose.pose.position.z =  0.0;
@@ -203,6 +209,7 @@ bool goToGoal (double x, double y)
 // from https://answers.ros.org/question/248046/subscribing-to-amcl-pose/
 void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage)
 {
+  // get x and y coordinates from AMCL
   poseAMCLx = AMCLmessage -> pose.pose.position.x;
   poseAMCLy = AMCLmessage -> pose.pose.position.y;
 }
@@ -210,38 +217,55 @@ void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AM
 std::vector <std::vector <double>> saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity)
 {
   // max amount of goals to store if a vector has a "max capacity"
+  // set this too high and the robot can corner itself
+  // set it too low and the robot will probably stay in the same area
   int maxGoals = 25;
 
   std::vector <double> tempGoal;
   for (int index = 0; index < 2; index++)
   {
-    // remember this successful goal
+    // add coordinates to temporary goal vector
     tempGoal.push_back (x);
     tempGoal.push_back (y);
   }
 
+  // add temporary goal vector to input vector
   destination.push_back (tempGoal);
 
-  // delete the oldest goal to maintain max capacity
+  // if input vector is larger than its set capacity
   if (destination.size () > maxGoals && hasCapacity)
   {
+    // delete the oldest goal to maintain max capacity
     destination.erase (destination.begin ());
   }
 
+  // return updated vector
   return destination;
 }
 
 // from https://www.programmersought.com/article/85495009501/
 void fillPathRequest (nav_msgs::GetPlan::Request & request, double startX, double startY, double goalX, double goalY)
 {
+  // set frame for starting position
   request.start.header.frame_id = "map";
+
+  // set coordinates for starting position
   request.start.pose.position.x = startX;
   request.start.pose.position.y = startY;
+
   request.start.pose.orientation.w = 1.0;
+
+  // set frame for ending position
   request.goal.header.frame_id = "map";
+
+  // set coordinates for ending position
   request.goal.pose.position.x = goalX;
   request.goal.pose.position.y = goalY;
+
   request.goal.pose.orientation.w = 1.0;
+
+  // from getplan service documentaion:
+  // If the goal is obstructed, how many meters the planner can relax the constraint in x and y before failing.
   request.tolerance = 0.0;
 }
 
