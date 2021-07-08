@@ -1,4 +1,3 @@
-#include <ros/ros.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <nav_msgs/GetPlan.h>
@@ -15,14 +14,8 @@ int main (int argc, char ** argv)
 {
   ros::init (argc, argv, "wander");
   //ROS_DEBUG ("initialized node wander");
-  ros::NodeHandle wanderNode;
-  //ROS_DEBUG ("created nodehandle n");
 
   PoseListener currentPose;
-
-  // subscribe to amcl pose to get estimated robot position
-  ros::Subscriber amclSub = wanderNode.subscribe ("amcl_pose", 100, & PoseListener::amclCallback, & currentPose);
-  //ROS_DEBUG ("subscribed to amcl_pose");
 
   ros::Rate loop_rate (10);
   ros::spinOnce ();

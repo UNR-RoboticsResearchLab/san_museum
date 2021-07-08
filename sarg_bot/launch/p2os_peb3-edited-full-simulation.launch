@@ -7,7 +7,7 @@
   <!-- launch 2d navigation -->
   <include file="$(find sarg_2dnav)/launch/sarg_2dnav.launch"/>
 
-	<!-- launch simulation -->
+  <!-- launch simulation -->
   <include file="$(find sarg_bot)/launch/p2os_peb3-edited.launch"/>
 
   <!-- launch joystick teleop -->
