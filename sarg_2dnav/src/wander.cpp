@@ -12,9 +12,11 @@ bool callPlanningService (ros::ServiceClient & serviceClient, nav_msgs::GetPlan 
 
 int main (int argc, char ** argv)
 {
+  // initialize node
   ros::init (argc, argv, "wander");
   //ROS_DEBUG ("initialized node wander");
 
+  // create listener object for amcl pose
   PoseListener currentPose;
 
   ros::Rate loop_rate (10);

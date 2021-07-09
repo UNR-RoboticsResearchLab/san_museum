@@ -1,4 +1,3 @@
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include "PoseListener.h"
 
 double PoseListener::getPoseX ()
