@@ -7,14 +7,17 @@
   <!-- launch 2d navigation -->
   <include file="$(find sarg_2dnav)/launch/sarg_2dnav.launch"/>
 
+  <!-- launch rplidar -->
+  <include file="$(find rplidar_ros)/launch/rplidar_a3.launch"/>
+
   <!-- launch pioneer driver -->
   <include file="$(find sarg_bot)/launch/p2os_driver.launch"/>
 
   <!-- launch joystick teleop -->
-  <include file="$(find sarg_bot)/launch/teleop_joy.launch"/>
+  <!-- <include file="$(find sarg_bot)/launch/teleop_joy.launch"/> -->
 
   <!-- run rviz with preset config -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sarg_2dnav)/config/rvizConfig.rviz"/>
+  <!-- node name="rviz" pkg="rviz" type="rviz" args="-d $(find sarg_2dnav)/config/rvizConfig.rviz"/> -->
 
   <!-- launch leg detector, for some reason this terminates when launched from this file so it will have to be started manually -->
   <!-- <include file="$(find leg_detector)/launch/leg_detector.launch"/> -->
