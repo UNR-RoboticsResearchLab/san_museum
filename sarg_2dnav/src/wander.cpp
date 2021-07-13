@@ -41,7 +41,7 @@ int main (int argc, char ** argv)
     double poseAMCLx = currentPose.getPoseX ();
     double poseAMCLy = currentPose.getPoseY ();
 
-    ROS_DEBUG ("pose: (%f, %f)", poseAMCLx, poseAMCLy);
+    //ROS_INFO ("pose: (%f, %f)", poseAMCLx, poseAMCLy);
 
     // goal coordinates
     double xGoal;
@@ -59,7 +59,7 @@ int main (int argc, char ** argv)
     int tries = 0;
 
     // set a goal to a location relative to the current pose
-    ROS_DEBUG ("finding suitable goal...");
+    ROS_INFO ("finding suitable goal...");
 
     do
     {
@@ -70,7 +70,7 @@ int main (int argc, char ** argv)
       xGoal = poseAMCLx + scale * ((rand () % (randomness * 2)) - (randomness));
       yGoal = poseAMCLy + scale * ((rand () % (randomness * 2)) - (randomness));
 
-      //ROS_DEBUG ("goal to test: (%f, %f)", xGoal, yGoal);
+      //ROS_INFO ("goal to test: (%f, %f)", xGoal, yGoal);
 
       // increase multiplier to avoid an infinite loop
       scale += 0.01;
@@ -131,14 +131,14 @@ bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std
   // if make_plan cannot find a plan
   if (!callPlanningService (planClient, planSrv))
   {
-    //ROS_DEBUG ("goal not ok, no path from planner");
+    //ROS_INFO ("goal not ok, no path from planner");
     return false;
   }
 
   // if goal is too close too current location
   if (abs (goalX - currentX) < locationThreshold && abs (goalY - currentY) < locationThreshold)
   {
-    //ROS_DEBUG ("goal not ok, too close to current location");
+    //ROS_INFO ("goal not ok, too close to current location");
     return false;
   }
 
@@ -148,12 +148,12 @@ bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std
     // if goal is too close to a previous location
     if (abs (goalX - successfulLocations.at (index).at (0)) < locationThreshold && abs (goalY - successfulLocations.at (index).at (1)) < locationThreshold)
     {
-      //ROS_DEBUG ("goal not ok, too close to previous location");
+      //ROS_INFO ("goal not ok, too close to previous location");
       return false;
     }
   }
 
-  ROS_DEBUG ("potential goal found");
+  //ROS_INFO ("potential goal found");
 
   return true;
 }

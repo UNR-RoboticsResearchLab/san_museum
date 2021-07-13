@@ -8,10 +8,10 @@
   <include file="$(find sarg_2dnav)/launch/sarg_2dnav.launch"/>
 
   <!-- launch rplidar -->
-  <include file="$(find rplidar_ros)/launch/rplidar_a3.launch"/>
+  <!-- <include file="$(find rplidar_ros)/launch/rplidar_a3.launch"/> -->
 
   <!-- launch pioneer driver -->
-  <include file="$(find sarg_bot)/launch/p2os_driver.launch"/>
+  <!-- <include file="$(find sarg_bot)/launch/p2os_driver.launch"/> -->
 
   <!-- launch joystick teleop -->
   <!-- <include file="$(find sarg_bot)/launch/teleop_joy.launch"/> -->
