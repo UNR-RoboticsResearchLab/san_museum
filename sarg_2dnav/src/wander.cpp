@@ -19,7 +19,7 @@ int main (int argc, char ** argv)
   // create listener object for amcl pose
   PoseListener currentPose;
 
-  ros::Rate loop_rate (10);
+  ros::Rate loop_rate (1);
   ros::spinOnce ();
   loop_rate.sleep();
   // spinOnce has to be called twice before getting correct pose, there's probably a better way to do this
