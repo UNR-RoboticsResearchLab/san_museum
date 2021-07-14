@@ -7,9 +7,6 @@
   <!-- set leg detector fixed frame -->
   <param name="/leg_detector/fixed_frame" value="laser_link"/>
 
-  <!-- set amcl fixed frame -->
-  <param name="/amcl/odom_frame_id" value="laser_link"/>
-
   <!-- choose map -->
   <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/peb3.yaml"/> -->
   <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/3rd.yaml"/> -->
@@ -28,4 +25,7 @@
     <rosparam file="$(find sarg_2dnav)/config/global_costmap_params.yaml" command="load"/>
     <rosparam file="$(find sarg_2dnav)/config/base_local_planner_params.yaml" command="load"/>
   </node>
+
+  <!-- relay base_scan to scan since they have the same msg -->
+  <node pkg="topic_tools" type="relay" name="relay_scan" args="/base_scan /scan"/>
 </launch>
