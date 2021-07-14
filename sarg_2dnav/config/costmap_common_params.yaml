@@ -18,4 +18,4 @@ inflation:
 
 obstacles:
   observation_sources: scan
-  scan: {data_type: LaserScan, sensor_frame: laser, clearing: true, marking: true, topic: /scan}
+  scan: {data_type: LaserScan, sensor_frame: laser, clearing: true, marking: true, topic: scan}
