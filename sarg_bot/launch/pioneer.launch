@@ -18,6 +18,6 @@
   <!-- start camera -->
   <node pkg="usb_cam" type="usb_cam_node" name="camera">
     <!-- limit framerate -->
-    <param name="framerate" type="integer" value="5"/>
+    <param name="framerate" type="int" value="5"/>
   </node>
 </launch>

@@ -5,10 +5,14 @@
   <param name="use_sim_time" value="true"/>
 
   <!-- launch 2d navigation -->
-  <include file="$(find sarg_2dnav)/launch/sarg_2dnav-sim.launch"/>
+  <include file="$(find sarg_2dnav)/launch/sarg_2dnav_sim.launch"/>
 
-  <!-- launch simulation -->
-  <include file="$(find sarg_bot)/launch/p2os_peb3-edited.launch"/>
+  <!-- run p2os to control the pioneer -->
+  <arg name="p2os_driver" value="1"/>
+
+  <!-- start stage in the given world -->
+  <param name="includeFile" value="$(find sarg_2dnav)/maps/stageworlds/peb3-edited.world" type="str"/>
+  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find sarg_2dnav)/maps/stageworlds/peb3-edited.world"/>
 
   <!-- launch joystick teleop -->
   <include file="$(find sarg_bot)/launch/teleop_joy.launch"/>
