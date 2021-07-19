@@ -6,6 +6,9 @@
 	<!-- rplidar start -->
 	<include file="$(find rplidar_ros)/launch/rplidar_a3.launch"/>
 
+	<!-- relay scan to base_scan -->
+	<node pkg="topic_tools" type="relay" name="scan_relay" args="scan base_scan"/>
+
 	<!-- tf configuration of laser to robot (needs measurement) -->
 	<node pkg="tf" type="static_transform_publisher" name="laser_link" args="0 0 .13 0 0 0  base_link laser 100"/>
 
@@ -15,9 +18,6 @@
   <!-- start camera -->
   <node pkg="usb_cam" type="usb_cam_node" name="camera">
     <!-- limit framerate -->
-    <param name="framerate" type="integer" value="1"/>
+    <param name="framerate" type="integer" value="5"/>
   </node>
-
-  <!-- image compression -->
-  <node pkg="image_transport" type="republish" args="transport in:=camera/image_raw raw out:=camera/image_decompressed"/>
 </launch>
