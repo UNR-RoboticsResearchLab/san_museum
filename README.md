@@ -8,13 +8,20 @@ using a lidar scanner and camera, will make socially informed decisions in navig
 
 ### dependencies
 
-amcl
-p2os
-rplidar_ros
-darknet_ros
-usb_cam
-leg_detector
-stageros
+- amcl
+  estimating robot's position
+- p2os
+  communication with the pioneer
+- rplidar_ros
+  laser scanning substitute for the pioneer's built in sonar
+- darknet_ros
+  object detection
+- usb_cam
+  camera feed for object detection
+- leg_detector
+  person detection (not implemented yet)
+- stageros
+  simulation software
 
 ### building
 
