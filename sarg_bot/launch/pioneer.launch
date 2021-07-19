@@ -1,0 +1,23 @@
+<launch>
+	<!-- pioneer start -->
+	<include file="$(find sarg_bot)/launch/p2os_driver.launch"/>
+	<!--<include file="$(find sarg_bot)/teleop_joy.launch"/>-->
+
+	<!-- rplidar start -->
+	<include file="$(find rplidar_ros)/launch/rplidar_a3.launch"/>
+
+	<!-- tf configuration of laser to robot (needs measurement) -->
+	<node pkg="tf" type="static_transform_publisher" name="laser_link" args="0 0 .13 0 0 0  base_link laser 100"/>
+
+  <!-- launch 2dnav -->
+  <include file="$(find sarg_2dnav)/launch/sarg_2dnav.launch"/>
+
+  <!-- start camera -->
+  <node pkg="usb_cam" type="usb_cam_node" name="camera">
+    <!-- limit framerate -->
+    <param name="framerate" type="integer" value="1"/>
+  </node>
+
+  <!-- image compression -->
+  <node pkg="image_transport" type="republish" args="transport in:=camera/image_raw raw out:=camera/image_decompressed"/>
+</launch>
