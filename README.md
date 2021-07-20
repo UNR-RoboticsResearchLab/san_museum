@@ -42,6 +42,10 @@ have a robot setting random goals relative to its current position
 2. set map in sarg_2dnav_sim.launch
 3. `roslaunch sarg_bot simulation.launch`
 
+you should see something like this:
+
+![rviz with simulated robot navigating](readme/sim.png?raw=true "Title")
+
 ### for pioneer
 
 **on computer running roscore**
@@ -58,6 +62,10 @@ have a robot setting random goals relative to its current position
 3. make sure all usb connections are correct (by default, pioneer is connected to ttyUSB0 and rplidar is connected to ttyUSB1)
 4. set master uri to computer running roscore
 5. `roslaunch sarg_bot pioneer.launch`
+
+you should see something like this:
+
+![rviz with simulated robot navigating](readme/pioneer.png?raw=true "Title")
 
 the computer running roscore and the computer connected to the pioneer can be the same, but this is resource intensive and not recommended
 
