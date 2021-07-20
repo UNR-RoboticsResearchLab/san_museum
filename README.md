@@ -1,27 +1,20 @@
-# socially aware navigation in a museum setting
+# socially aware navigation in a museum setting with ontology
 
 ## overview
 
-using a lidar scanner and camera, will make socially informed decisions in navigation
+using a lidar scanner and camera, will make socially informed decisions in navigation using ontology
 
 ## installation
 
 ### dependencies
 
-- amcl<br/>
-  estimating robot's position
-- p2os<br/>
-  communication with the pioneer
-- rplidar_ros<br/>
-  laser scanning substitute for the pioneer's built in sonar
-- darknet_ros<br/>
-  object detection
-- usb_cam<br/>
-  camera feed for object detection
-- leg_detector<br/>
-  person detection (not implemented yet)
-- stageros<br/>
-  simulation software
+- **[navigation](wiki.ros.org/navigation/)** (estimating robot's position and setting goals)
+- **[p2os](wiki.ros.org/p2os)** (communication with the pioneer)
+- **[rplidar](wiki.ros.org/rplidar)** (laser scanning substitute for the pioneer's built in sonar)
+- **[darknet_ros](wiki.ros.org/darknet_ros)** (object detection)
+- **[usb_cam](wiki.ros.org/usb_cam)** (camera feed for object detection)
+- **[leg_detector](wiki.ros.org/leg_detector)** (person detection (not implemented yet))
+- **[stage](wiki.ros.org/stage/)** (simulation software)
 
 ### building
 
@@ -35,6 +28,7 @@ catkin_make
 ## basic usage
 
 have a robot setting random goals relative to its current position
+all commands assume terminal is at `your_catkin_workspace` path
 
 ### for simulation
 
@@ -67,7 +61,7 @@ you should see something like this:
 
 ![rviz with simulated robot navigating](readme/pioneer.png?raw=true "Title")
 
-the computer running roscore and the computer connected to the pioneer can be the same, but this is resource intensive and not recommended
+*note: the computer running roscore and the computer connected to the pioneer can be the same, but this is resource intensive and not recommended*
 
 ## nodes
 
