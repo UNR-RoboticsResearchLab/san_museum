@@ -13,7 +13,7 @@ using a lidar scanner and camera, will make socially informed decisions in navig
 - **[rplidar](wiki.ros.org/rplidar)** (laser scanning substitute for the pioneer's built in sonar)
 - **[darknet_ros](wiki.ros.org/darknet_ros)** (object detection)
 - **[usb_cam](wiki.ros.org/usb_cam)** (camera feed for object detection)
-- **[leg_detector](wiki.ros.org/leg_detector)** (person detection (not implemented yet))
+- **[leg_detector](wiki.ros.org/leg_detector)** (person detection)
 - **[stage](wiki.ros.org/stage/)** (simulation software)
 
 ### building
@@ -38,7 +38,7 @@ all commands assume terminal is at `your_catkin_workspace` path
 
 you should see something like this:
 
-![rviz with simulated robot navigating](readme/sim.png?raw=true "Title")
+![rviz with simulated robot navigating](readme/sim.png?raw=true "rviz with simulated robot navigating]")
 
 ### for pioneer
 
@@ -59,7 +59,7 @@ you should see something like this:
 
 you should see something like this:
 
-![rviz with simulated robot navigating](readme/pioneer.png?raw=true "Title")
+![pioneer navigating a real setting with object detection from camera](readme/pioneer.png?raw=true "pioneer navigating a real setting with object detection from camera")
 
 *note: the computer running roscore and the computer connected to the pioneer can be the same, but this is resource intensive and not recommended*
 
