@@ -11,7 +11,7 @@
   <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/peb3.yaml"/> -->
   <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/3rd.yaml"/> -->
   <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/upper.yaml"/> -->
-  <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/peb3-edited.yaml"/>
+  <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/lab.yaml"/>
 
   <!--- Run AMCL -->
   <include file="$(find amcl)/examples/amcl_omni.launch"/>
