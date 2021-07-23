@@ -1,0 +1,12 @@
+<launch>
+  <master auto="start"/>
+
+  <!-- launch joystick teleop -->
+  <include file="$(find sarg_bot)/launch/teleop_joy.launch"/>
+
+  <!-- run rviz with preset config -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sarg_2dnav)/config/rvizConfig.rviz"/>
+
+  <!-- launch people detection -->
+  <include file="$(find people_velocity_tracker)/launch/filtered_tracked_detector.launch"/>
+</launch>
