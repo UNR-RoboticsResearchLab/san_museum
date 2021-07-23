@@ -8,7 +8,8 @@ plugins:
   - {name: obstacles,   type: "costmap_2d::VoxelLayer"} # laser scans
   - {name: static_map,  type: "costmap_2d::StaticLayer"} # bitmap
   - {name: inflation,  type: "costmap_2d::InflationLayer"} # size of robot
-  - {name: social_layer, type: "social_navigation_layers::ProxemicLayer"} # leg detection
+  - {name: social_layer, type: "social_navigation_layers::ProxemicLayer"} # people detection
+  - {name: social_pass_layer, type: "social_navigation_layers::PassingLayer"} # people detection
 
 inflation:
   inflation_radius: 0.3

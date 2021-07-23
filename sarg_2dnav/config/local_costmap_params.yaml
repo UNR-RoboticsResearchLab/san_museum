@@ -18,5 +18,6 @@ local_costmap:
     # inflation layer
     - {name: inflation, type: "costmap_2d::InflationLayer"}
 
-    # social layer
+    # social layers
     - {name: social_layer, type: "social_navigation_layers::ProxemicLayer"}
+    - {name: social_pass_layer, type: "social_navigation_layers::PassingLayer"}
