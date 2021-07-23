@@ -2,7 +2,7 @@ obstacle_range: 15.0
 raytrace_range: 15.0
 footprint: [[.36, .25], [.36, -0.25], [-0.29, -0.25], [-0.29, .25]]
 #robot_radius: ir_of_robot
-inflation_radius: 0.30
+inflation_radius: 0.40
 
 plugins:
   - {name: obstacles,   type: "costmap_2d::VoxelLayer"} # laser scans
