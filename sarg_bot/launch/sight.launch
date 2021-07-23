@@ -9,4 +9,7 @@
 
   <!-- launch people detection -->
   <include file="$(find people_velocity_tracker)/launch/filtered_tracked_detector.launch"/>
+
+  <!-- launch object detection -->
+  <include file="$(find darknet_ros)/launch/darknet_ros_nodelet.launch"/>
 </launch>
