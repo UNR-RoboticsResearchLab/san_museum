@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   geometry_msgs
   nav_msgs
+  people_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -139,6 +140,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/sarg_2dnav_node.cpp)
 add_executable(wander src/wander.cpp include/PoseListener.cpp)
+add_executable(follow src/follow.cpp include/PoseListener.cpp include/PeopleListener.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -152,6 +154,9 @@ add_executable(wander src/wander.cpp include/PoseListener.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(wander
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(follow
   ${catkin_LIBRARIES}
 )
 

@@ -209,7 +209,7 @@ std::vector <std::vector <double>> saveGoal (double x, double y, std::vector <st
   // max amount of goals to store if a vector has a "max capacity"
   // set this too high and the robot can corner itself
   // set it too low and the robot will probably stay in the same area
-  int maxGoals = 25;
+  int maxGoals = 5;
 
   std::vector <double> tempGoal;
 
