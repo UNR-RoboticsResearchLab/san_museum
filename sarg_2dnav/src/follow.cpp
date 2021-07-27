@@ -43,13 +43,13 @@ int main (int argc, char ** argv)
     double poseAMCLx = currentPose.getPoseX ();
     double poseAMCLy = currentPose.getPoseY ();
 
-    std::vector <double> reliableLocation = peoplePresent.getMostReliableLocation ();
+    std::vector <std::vector <double>> reliableLocations = peoplePresent.sortByReliability ();
 
     //ROS_INFO ("pose: (%f, %f)", poseAMCLx, poseAMCLy);
 
     // goal coordinates
-    double xGoal;
-    double yGoal;
+    double xGoal = poseAMCLx;
+    double yGoal = poseAMCLy;
 
     // whether or not the goal has been reached
     bool goalReached = false;
@@ -57,14 +57,26 @@ int main (int argc, char ** argv)
     // set a goal to a location relative to the current pose
     ROS_INFO ("finding suitable goal...");
 
-    xGoal = poseAMCLx + reliableLocation.at (0);
-    yGoal = poseAMCLy + reliableLocation.at (1);
+    int index = reliableLocations.size ();
 
-    // try to see if a path can be make to the goal
-    if (goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, previousLocations))
+    double xTransform = 0;
+    double yTransform = 0;
+
+    do
     {
-      goalReached = goToGoal (xGoal, yGoal);
+      index -= 1;
+
+      xTransform = reliableLocations.at (index).at (0);
+      yTransform = reliableLocations.at (index).at (1);
+
+      xGoal = poseAMCLx + (xTransform / 2);
+      yGoal = poseAMCLy + (yTransform / 2);
+
+      //std::cout << "testing person " << index + 1 << std::endl;
     }
+    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, previousLocations) && index > 0);
+
+    goalReached = goToGoal (xGoal, yGoal);
 
     if (goalReached)
     {

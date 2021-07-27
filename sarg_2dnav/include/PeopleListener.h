@@ -18,7 +18,7 @@ class PeopleListener
   public:
     // return x coordinate
     std::vector <std::vector <double>> getPeopleLocations ();
-    std::vector <double> getMostReliableLocation ();
+    std::vector <std::vector <double>> sortByReliability ();
 
     // set coordinates
     void setPersonLocation (double x, double y, double r);

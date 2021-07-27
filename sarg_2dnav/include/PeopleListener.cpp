@@ -5,36 +5,40 @@ std::vector <std::vector <double>> PeopleListener::getPeopleLocations ()
   return peopleLocations;
 }
 
-std::vector <double> PeopleListener::getMostReliableLocation ()
+std::vector <std::vector <double>> PeopleListener::sortByReliability ()
 {
-  /*
-  * ROS_INFO ("peopleLocations size: %d", peopleLocations.size ());
-  * for (int index = 0; index < peopleLocations.size (); index += 1)
-  * {
-  *   ROS_INFO ("Person %d at (%.2f, %.2f) with %.2f reliability", index + 1, peopleLocations.at (index).at (0), peopleLocations.at (index).at (1), peopleLocations.at (index).at (2));
-  * }
-  */
-
   if (peopleLocations.size () > 0)
   {
-    double mostReliable = peopleLocations.front ().at (2);
-    int mostReliableIndex = 0;
+    ROS_INFO ("people present, sorting...");
 
-    for (int index = 0; index < peopleLocations.size (); index += 1)
-    {
-      if (peopleLocations.at (index).at (2) > mostReliable)
+    int x = 0;
+    int y = 1;
+    int r = 2;
+
+    std::vector <std::vector <double>> reliabilitySorted = peopleLocations;
+
+    //https://en.cppreference.com/w/cpp/algorithm/sort
+    std::sort
+    (
+      reliabilitySorted.begin (),
+      reliabilitySorted.end (),
+      [] (const std::vector <double> & a, const std::vector <double> & b)
       {
-        mostReliable = peopleLocations.at (index).at (2);
-        mostReliableIndex = index;
+        return a [2] < b [2];
       }
-    }
+    );
 
-    ROS_INFO ("most reliable person at (%.2f, %.2f)", peopleLocations.at (mostReliableIndex).at (0), peopleLocations.at (mostReliableIndex).at (1));
+    /*
+    * for (int index = 0; index < reliabilitySorted.size (); index += 1)
+    * {
+    *   ROS_INFO ("person %d reliability: %.3f", index + 1, reliabilitySorted.at (index).at (r));
+    * }
+    */
 
-    return peopleLocations.at (mostReliableIndex);
+    return reliabilitySorted;
   }
 
-  return {0, 0, 0};
+  return std::vector <std::vector <double>> {{0, 0, 0}};
 }
 
 void PeopleListener::setPersonLocation (double x, double y, double r)
@@ -48,7 +52,11 @@ void PeopleListener::peopleCallback (const people_msgs::People::ConstPtr & peopl
 
   for (int index = 0; index < peopleMessage -> people.size (); index += 1)
   {
-    setPersonLocation (peopleMessage -> people [index].position.x, peopleMessage -> people [index].position.y, peopleMessage -> people [index].reliability);
+    double x = peopleMessage -> people [index].position.x;
+    double y = peopleMessage -> people [index].position.y;
+    double r = peopleMessage -> people [index].reliability;
+
+    setPersonLocation (x, y, r);
   }
 }
 
