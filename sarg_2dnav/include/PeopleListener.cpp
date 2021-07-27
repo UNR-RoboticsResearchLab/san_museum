@@ -7,17 +7,16 @@ std::vector <std::vector <double>> PeopleListener::getPeopleLocations ()
 
 std::vector <std::vector <double>> PeopleListener::sortByReliability ()
 {
+  // if peopleLocations has items
   if (peopleLocations.size () > 0)
   {
-    ROS_INFO ("people present, sorting...");
+    //ROS_INFO ("people present, sorting...");
 
-    int x = 0;
-    int y = 1;
-    int r = 2;
-
+    // copy the vector of people locations
     std::vector <std::vector <double>> reliabilitySorted = peopleLocations;
 
-    //https://en.cppreference.com/w/cpp/algorithm/sort
+    // sort the copied vector
+    // https://en.cppreference.com/w/cpp/algorithm/sort
     std::sort
     (
       reliabilitySorted.begin (),
@@ -28,28 +27,25 @@ std::vector <std::vector <double>> PeopleListener::sortByReliability ()
       }
     );
 
-    /*
-    * for (int index = 0; index < reliabilitySorted.size (); index += 1)
-    * {
-    *   ROS_INFO ("person %d reliability: %.3f", index + 1, reliabilitySorted.at (index).at (r));
-    * }
-    */
-
     return reliabilitySorted;
   }
 
+  // if peopleLocations is empty, return a vector of zeroes
   return std::vector <std::vector <double>> {{0, 0, 0}};
 }
 
 void PeopleListener::setPersonLocation (double x, double y, double r)
 {
+  // add to peopleLocations in push_back in format (x coordinate, y coordinate, reliability)
   peopleLocations.push_back (std::vector <double> ({x, y, r}));
 }
 
 void PeopleListener::peopleCallback (const people_msgs::People::ConstPtr & peopleMessage)
 {
+  // clear previously stored people locations (since people move)
   clearLocations ();
 
+  // add in new locations of people
   for (int index = 0; index < peopleMessage -> people.size (); index += 1)
   {
     double x = peopleMessage -> people [index].position.x;

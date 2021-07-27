@@ -5,17 +5,16 @@
 #include "PoseListener.h"
 #include "PeopleListener.h"
 
-bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std::vector <std::vector <double>> successfulLocations);
+bool goalIsOk (double goalX, double goalY, double currentX, double currentY);
 bool goToGoal (double x, double y);
-std::vector <std::vector <double>> saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity);
 void fillPathRequest (nav_msgs::GetPlan::Request & request, double startX, double startY, double goalX, double goalY);
 bool callPlanningService (ros::ServiceClient & serviceClient, nav_msgs::GetPlan & serviceMessage);
 
 int main (int argc, char ** argv)
 {
   // initialize node
-  ros::init (argc, argv, "wander");
-  //ROS_DEBUG ("initialized node wander");
+  ros::init (argc, argv, "follow");
+  //ROS_DEBUG ("initialized node follow");
 
   // create listener object for amcl pose
   PoseListener currentPose;
@@ -26,15 +25,6 @@ int main (int argc, char ** argv)
   loop_rate.sleep();
   // spinOnce has to be called twice before getting correct pose, there's probably a better way to do this
   ros::spinOnce ();
-
-  // seed for random number generator
-  srand (time (NULL));
-
-  // maximum attempts to find a goal (stop infinite loop)
-  int maxTries = 1000;
-
-  // previous locations that did have a path
-  std::vector <std::vector <double>> previousLocations;
 
   // loop until ctrl-c is pressed or ros::shutdown is called
   while (ros::ok ())
@@ -54,7 +44,6 @@ int main (int argc, char ** argv)
     // whether or not the goal has been reached
     bool goalReached = false;
 
-    // set a goal to a location relative to the current pose
     ROS_INFO ("finding suitable goal...");
 
     int index = reliableLocations.size ();
@@ -64,24 +53,27 @@ int main (int argc, char ** argv)
 
     do
     {
+      // iterate people locations backwards (from most reliable to least)
       index -= 1;
 
+      // how far away from the current position the robot should move
       xTransform = reliableLocations.at (index).at (0);
       yTransform = reliableLocations.at (index).at (1);
 
+      // set a goal to test, divide transform by 2 to stop goal from being set directly on a person
       xGoal = poseAMCLx + (xTransform / 2);
       yGoal = poseAMCLy + (yTransform / 2);
 
       //std::cout << "testing person " << index + 1 << std::endl;
     }
-    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, previousLocations) && index > 0);
+    // test goal, also check if index is below 1
+    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy) && index > 0);
 
     goalReached = goToGoal (xGoal, yGoal);
 
     if (goalReached)
     {
       ROS_INFO ("goal reached\n");
-      previousLocations = saveGoal (xGoal, yGoal, previousLocations, true);
     }
 
     else
@@ -98,11 +90,15 @@ int main (int argc, char ** argv)
 }
 
 // check if the goal is too close to current location, a failed goal, or a previous location
-bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std::vector <std::vector <double>> successfulLocations)
+bool goalIsOk (double goalX, double goalY, double currentX, double currentY)
 {
   ros::NodeHandle goalCheckNode;
   ros::ServiceClient planClient = goalCheckNode.serviceClient <nav_msgs::GetPlan> ("move_base/make_plan", true);
   nav_msgs::GetPlan planSrv;
+
+  // how different a new location has to be from a failed goal, previous location, or current location
+  // setting this too high will make it too hard for a new goal to be found
+  double locationThreshold = 1.5;
 
   // fill in the request for make_plan service
   fillPathRequest (planSrv.request, currentX, currentY, goalX, goalY);
@@ -113,6 +109,14 @@ bool goalIsOk (double goalX, double goalY, double currentX, double currentY, std
     //ROS_INFO ("goal not ok, no path from planner");
     return false;
   }
+
+  // if goal is too close too current location
+  if (abs (goalX - currentX) < locationThreshold && abs (goalY - currentY) < locationThreshold)
+  {
+    //ROS_INFO ("goal not ok, too close to current location");
+    return false;
+  }
+
 
   //ROS_INFO ("potential goal found");
 
@@ -163,36 +167,6 @@ bool goToGoal (double x, double y)
    //ROS_WARN ("robot did not reach the destination");
    return false;
   }
-}
-
-std::vector <std::vector <double>> saveGoal (double x, double y, std::vector <std::vector <double>> destination, bool hasCapacity)
-{
-  // max amount of goals to store if a vector has a "max capacity"
-  // set this too high and the robot can corner itself
-  // set it too low and the robot will probably stay in the same area
-  int maxGoals = 5;
-
-  std::vector <double> tempGoal;
-
-  for (int index = 0; index < 2; index++)
-  {
-    // add coordinates to temporary goal vector
-    tempGoal.push_back (x);
-    tempGoal.push_back (y);
-  }
-
-  // add temporary goal vector to input vector
-  destination.push_back (tempGoal);
-
-  // if input vector is larger than its set capacity
-  if (destination.size () > maxGoals && hasCapacity)
-  {
-    // delete the oldest goal to maintain max capacity
-    destination.erase (destination.begin ());
-  }
-
-  // return updated vector
-  return destination;
 }
 
 // from https://www.programmersought.com/article/85495009501/

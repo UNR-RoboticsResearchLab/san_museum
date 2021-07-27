@@ -6,7 +6,7 @@ class PoseListener
 {
   private:
     ros::NodeHandle poseNode;
-    //ROS_DEBUG ("created nodehandle n");
+    //ROS_DEBUG ("created nodehandle poseNode");
 
     // subscribe to amcl pose to get estimated robot position
     ros::Subscriber amclSub = poseNode.subscribe ("amcl_pose", 100, & PoseListener::amclCallback, this);
