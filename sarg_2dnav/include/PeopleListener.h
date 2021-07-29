@@ -24,7 +24,7 @@ class PeopleListener
 
     // set coordinates and reliability of person
     void setPersonLocation (double x, double y, double r);
-
+    
     // receieve and people message
     void peopleCallback (const people_msgs::People::ConstPtr & peopleMessage);
 

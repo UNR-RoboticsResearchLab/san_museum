@@ -4,8 +4,9 @@
 
 #include "PoseListener.h"
 #include "PeopleListener.h"
+#include "ObjectListener.h"
 
-bool goalIsOk (double goalX, double goalY, double currentX, double currentY);
+bool goalIsOk (double goalX, double goalY, double currentX, double currentY, ObjectListener objectsDetected);
 bool goToGoal (double x, double y);
 void fillPathRequest (nav_msgs::GetPlan::Request & request, double startX, double startY, double goalX, double goalY);
 bool callPlanningService (ros::ServiceClient & serviceClient, nav_msgs::GetPlan & serviceMessage);
@@ -19,6 +20,7 @@ int main (int argc, char ** argv)
   // create listener object for amcl pose
   PoseListener currentPose;
   PeopleListener peoplePresent;
+  ObjectListener objectsPresent;
 
   ros::Rate loop_rate (1);
   ros::spinOnce ();
@@ -64,21 +66,21 @@ int main (int argc, char ** argv)
       xGoal = poseAMCLx + (xTransform / 2);
       yGoal = poseAMCLy + (yTransform / 2);
 
-      //std::cout << "testing person " << index + 1 << std::endl;
+      std::cout << "testing person " << index + 1 << std::endl;
     }
     // test goal, also check if index is below 1
-    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy) && index > 0);
+    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, objectsPresent) && index > 0 && xTransform + yTransform < 0.1 && xTransform + yTransform > 10);
 
     goalReached = goToGoal (xGoal, yGoal);
 
     if (goalReached)
     {
-      ROS_INFO ("goal reached\n");
+      ROS_INFO ("goal reached");
     }
 
     else
     {
-      ROS_WARN ("goal not reached\n");
+      ROS_WARN ("goal not reached");
     }
 
     // get new position data
@@ -90,7 +92,7 @@ int main (int argc, char ** argv)
 }
 
 // check if the goal is too close to current location, a failed goal, or a previous location
-bool goalIsOk (double goalX, double goalY, double currentX, double currentY)
+bool goalIsOk (double goalX, double goalY, double currentX, double currentY, ObjectListener objectsDetected)
 {
   ros::NodeHandle goalCheckNode;
   ros::ServiceClient planClient = goalCheckNode.serviceClient <nav_msgs::GetPlan> ("move_base/make_plan", true);
@@ -116,7 +118,6 @@ bool goalIsOk (double goalX, double goalY, double currentX, double currentY)
     //ROS_INFO ("goal not ok, too close to current location");
     return false;
   }
-
 
   //ROS_INFO ("potential goal found");
 

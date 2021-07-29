@@ -10,6 +10,7 @@ project(sarg_2dnav)
 find_package(catkin REQUIRED COMPONENTS
   move_base
   move_base_msgs
+  darknet_ros_msgs
   roscpp
   actionlib
   geometry_msgs
@@ -140,7 +141,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/sarg_2dnav_node.cpp)
 add_executable(wander src/wander.cpp include/PoseListener.cpp)
-add_executable(follow src/follow.cpp include/PoseListener.cpp include/PeopleListener.cpp)
+add_executable(follow src/follow.cpp include/PoseListener.cpp include/PeopleListener.cpp include/ObjectListener.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
