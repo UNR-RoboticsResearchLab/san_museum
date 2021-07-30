@@ -8,14 +8,14 @@ TrajectoryPlannerROS:
   acc_lim_x: 2.5
   acc_lim_y: 2.5
 
-  # escape_vel: 0
+  escape_vel: 0
 
   holonomic_robot: false
 
   # change goal tolerance so the robot does not have to be 100% accurate to reach destination
-  yaw_goal_tolerance: 0.1
+  yaw_goal_tolerance: 6.283
   xy_goal_tolerance: 0.5
-  latch_xy_goal_tolerance: false
+  latch_xy_goal_tolerance: true
 
   # disable recovery behaviors
   # this doesnt seem to fully work

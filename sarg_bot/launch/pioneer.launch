@@ -1,7 +1,6 @@
 <launch>
 	<!-- pioneer start -->
 	<include file="$(find sarg_bot)/launch/p2os_driver.launch"/>
-	<!--<include file="$(find sarg_bot)/teleop_joy.launch"/>-->
 
 	<!-- rplidar start -->
 	<include file="$(find rplidar_ros)/launch/rplidar_a3.launch"/>
@@ -19,5 +18,5 @@
   <node pkg="usb_cam" type="usb_cam_node" name="camera">
     <!-- limit framerate -->
     <param name="framerate" type="int" value="5"/>
-  </node> 
+  </node>
 </launch>

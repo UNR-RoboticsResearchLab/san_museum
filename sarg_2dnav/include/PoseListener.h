@@ -20,9 +20,11 @@ class PoseListener
     double getPoseX ();
     // return y coordinate
     double getPoseY ();
+    // return rotation
+    double getRotation ();
 
     // set coordinates
-    void setPose (double x, double y);
+    void setPose (double x, double y, double r);
 
     // receieve and process amcl message
     void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage);

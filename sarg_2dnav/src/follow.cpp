@@ -59,28 +59,29 @@ int main (int argc, char ** argv)
       index -= 1;
 
       // how far away from the current position the robot should move
+      // problem: the people coordinates do not account for a robot that is rotated
       xTransform = reliableLocations.at (index).at (0);
       yTransform = reliableLocations.at (index).at (1);
 
       // set a goal to test, divide transform by 2 to stop goal from being set directly on a person
-      xGoal = poseAMCLx + (xTransform / 2);
-      yGoal = poseAMCLy + (yTransform / 2);
+      xGoal = xTransform / 2;
+      yGoal = yTransform / 2;
 
-      std::cout << "testing person " << index + 1 << std::endl;
+      //std::cout << "testing person " << index + 1 << std::endl;
     }
     // test goal, also check if index is below 1
-    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, objectsPresent) && index > 0 && xTransform + yTransform < 0.1 && xTransform + yTransform > 10);
+    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, objectsPresent) && index > 0);
 
     goalReached = goToGoal (xGoal, yGoal);
 
     if (goalReached)
     {
-      ROS_INFO ("goal reached");
+      ROS_INFO ("goal reached\n");
     }
 
     else
     {
-      ROS_WARN ("goal not reached");
+      ROS_WARN ("goal not reached\n");
     }
 
     // get new position data
@@ -98,10 +99,6 @@ bool goalIsOk (double goalX, double goalY, double currentX, double currentY, Obj
   ros::ServiceClient planClient = goalCheckNode.serviceClient <nav_msgs::GetPlan> ("move_base/make_plan", true);
   nav_msgs::GetPlan planSrv;
 
-  // how different a new location has to be from a failed goal, previous location, or current location
-  // setting this too high will make it too hard for a new goal to be found
-  double locationThreshold = 1.5;
-
   // fill in the request for make_plan service
   fillPathRequest (planSrv.request, currentX, currentY, goalX, goalY);
 
@@ -109,13 +106,6 @@ bool goalIsOk (double goalX, double goalY, double currentX, double currentY, Obj
   if (!callPlanningService (planClient, planSrv))
   {
     //ROS_INFO ("goal not ok, no path from planner");
-    return false;
-  }
-
-  // if goal is too close too current location
-  if (abs (goalX - currentX) < locationThreshold && abs (goalY - currentY) < locationThreshold)
-  {
-    //ROS_INFO ("goal not ok, too close to current location");
     return false;
   }
 
@@ -139,7 +129,7 @@ bool goToGoal (double x, double y)
   move_base_msgs::MoveBaseGoal goal;
 
   // set up the frame parameters
-  goal.target_pose.header.frame_id = "map";
+  goal.target_pose.header.frame_id = "laser";
   goal.target_pose.header.stamp = ros::Time::now ();
 
   // set goal coordinates
@@ -183,7 +173,7 @@ void fillPathRequest (nav_msgs::GetPlan::Request & request, double startX, doubl
   request.start.pose.orientation.w = 1.0;
 
   // set frame for ending position
-  request.goal.header.frame_id = "map";
+  request.goal.header.frame_id = "laser";
 
   // set coordinates for ending position
   request.goal.pose.position.x = goalX;
