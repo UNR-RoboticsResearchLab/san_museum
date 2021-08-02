@@ -8,13 +8,13 @@ using a lidar scanner and camera, will make socially informed decisions in navig
 
 ### dependencies
 
-- **[navigation](wiki.ros.org/navigation/)** (estimating robot's position and setting goals)
-- **[p2os](wiki.ros.org/p2os)** (communication with the pioneer)
-- **[rplidar](wiki.ros.org/rplidar)** (laser scanning substitute for the pioneer's built in sonar)
-- **[darknet_ros](wiki.ros.org/darknet_ros)** (object detection)
-- **[usb_cam](wiki.ros.org/usb_cam)** (camera feed for object detection)
-- **[leg_detector](wiki.ros.org/leg_detector)** (person detection)
-- **[stage](wiki.ros.org/stage/)** (simulation software)
+- **[navigation](https://wiki.ros.org/navigation/)** (estimating robot's position and setting goals)
+- **[p2os](https://wiki.ros.org/p2os)** (communication with the pioneer)
+- **[rplidar](https://wiki.ros.org/rplidar)** (laser scanning substitute for the pioneer's built in sonar)
+- **[darknet_ros](https://wiki.ros.org/darknet_ros)** (object detection)
+- **[usb_cam](https://wiki.ros.org/usb_cam)** (camera feed for object detection)
+- **[leg_detector](https://wiki.ros.org/leg_detector)** (person detection)
+- **[stage](https://wiki.ros.org/stage/)** (simulation software)
 
 ### building
 
