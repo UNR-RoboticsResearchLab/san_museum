@@ -16,15 +16,14 @@ class PoseListener
     std::vector <double> poseAMCL;
 
   public:
+    std::vector <double> getPose ();
     // return x coordinate
     double getPoseX ();
     // return y coordinate
     double getPoseY ();
-    // return rotation
-    double getRotation ();
 
     // set coordinates
-    void setPose (double x, double y, double r);
+    void setPose (double x, double y);
 
     // receieve and process amcl message
     void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage);

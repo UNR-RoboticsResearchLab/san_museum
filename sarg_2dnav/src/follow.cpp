@@ -45,6 +45,7 @@ int main (int argc, char ** argv)
 
     // whether or not the goal has been reached
     bool goalReached = false;
+    bool pathCheck = false;
 
     ROS_INFO ("finding suitable goal...");
 
@@ -53,7 +54,8 @@ int main (int argc, char ** argv)
     double xTransform = 0;
     double yTransform = 0;
 
-    do
+    // test goal, also check if index is below 1
+    while (!pathCheck && index > 0)
     {
       // iterate people locations backwards (from most reliable to least)
       index -= 1;
@@ -64,14 +66,14 @@ int main (int argc, char ** argv)
       yTransform = reliableLocations.at (index).at (1);
 
       // set a goal to test, divide transform by 2 to stop goal from being set directly on a person
-      xGoal = xTransform / 2;
-      yGoal = yTransform / 2;
+      xGoal = (poseAMCLx + xTransform) / 2;
+      yGoal = (poseAMCLy + yTransform) / 2;
 
-      //std::cout << "testing person " << index + 1 << std::endl;
+      std::cout << "testing person " << index + 1 << std::endl;
+      pathCheck = goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, objectsPresent);
     }
-    // test goal, also check if index is below 1
-    while (!goalIsOk (xGoal, yGoal, poseAMCLx, poseAMCLy, objectsPresent) && index > 0);
 
+    std::cout << "sending goal\n";
     goalReached = goToGoal (xGoal, yGoal);
 
     if (goalReached)
@@ -129,7 +131,7 @@ bool goToGoal (double x, double y)
   move_base_msgs::MoveBaseGoal goal;
 
   // set up the frame parameters
-  goal.target_pose.header.frame_id = "laser";
+  goal.target_pose.header.frame_id = "map";
   goal.target_pose.header.stamp = ros::Time::now ();
 
   // set goal coordinates
@@ -173,7 +175,7 @@ void fillPathRequest (nav_msgs::GetPlan::Request & request, double startX, doubl
   request.start.pose.orientation.w = 1.0;
 
   // set frame for ending position
-  request.goal.header.frame_id = "laser";
+  request.goal.header.frame_id = "map";
 
   // set coordinates for ending position
   request.goal.pose.position.x = goalX;
@@ -197,7 +199,7 @@ bool callPlanningService (ros::ServiceClient & serviceClient, nav_msgs::GetPlan 
     if (!serviceMessage.response.plan.poses.empty ())
     {
       // std::for_each(srv.response.plan.poses.begin(),srv.response.plan.poses.end(),myfunction);
-      //ROS_DEBUG ("make_plan success");
+      ROS_DEBUG ("make_plan success");
       return true;
     }
   }

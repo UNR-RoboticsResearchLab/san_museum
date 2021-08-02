@@ -142,6 +142,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/sarg_2dnav_node.cpp)
 add_executable(wander src/wander.cpp include/PoseListener.cpp)
 add_executable(follow src/follow.cpp include/PoseListener.cpp include/PeopleListener.cpp include/ObjectListener.cpp)
+add_executable(san src/san.cpp include/PoseListener.cpp include/PeopleListener.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -158,6 +159,10 @@ target_link_libraries(wander
   ${catkin_LIBRARIES}
 )
 target_link_libraries(follow
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(san
   ${catkin_LIBRARIES}
 )
 
