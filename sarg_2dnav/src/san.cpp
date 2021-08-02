@@ -39,7 +39,7 @@ int main (int argc, char ** argv)
     std::vector <std::vector <double>> people = peoplePresent.sortByReliability ();
 
     int density = people.size ();
-    double vulnerability = 3;
+    double vulnerability = rand () % 10 + 1;
 
     std::vector <double> goal;
 
@@ -231,16 +231,36 @@ std::vector <double> findGoal (std::vector <std::vector <double>> peopleLocation
     {
       // todo: set speed to slower
 
+      bool alreadyAtReservedLocation;
+
       // only go to predetermined locations
 
-      int randomReservedLocation = rand () % 3;
+      for (int index = 0; index < reservedLocations.size (); index += 1)
+      {
+        if (abs (currentCoordinates.at (x) - reservedLocations.at (index).at (x)) < 1 && abs (currentCoordinates.at (y) - reservedLocations.at (index).at (y)) < 1)
+        {
+          alreadyAtReservedLocation = true;
+        }
+      }
 
-      potentialGoal.clear ();
+      if (alreadyAtReservedLocation)
+      {
+        ROS_INFO ("already at reserved location, staying in current position");
+        goalIsOk = true;
+        potentialGoal = currentCoordinates;
+      }
 
-      potentialGoal.push_back (reservedLocations.at (randomReservedLocation).at (x));
-      potentialGoal.push_back (reservedLocations.at (randomReservedLocation).at (y));
+      else
+      {
+        int randomReservedLocation = rand () % 3;
 
-      goalIsOk = checkGoal (currentCoordinates, potentialGoal);
+        potentialGoal.clear ();
+
+        potentialGoal.push_back (reservedLocations.at (randomReservedLocation).at (x));
+        potentialGoal.push_back (reservedLocations.at (randomReservedLocation).at (y));
+
+        goalIsOk = checkGoal (currentCoordinates, potentialGoal);
+      }
 
       // if goal has not been found
       if (!goalIsOk)
@@ -289,6 +309,8 @@ bool checkGoal (std::vector <double> currentCoordinates, std::vector <double> go
   int x = 0;
   int y = 1;
 
+  double locationThreshold = 1;
+
   // fill in the request for make_plan service
   fillPathRequest (planSrv.request, currentCoordinates, goalCoordinates);
 
@@ -296,6 +318,13 @@ bool checkGoal (std::vector <double> currentCoordinates, std::vector <double> go
   if (!callPlanningService (planClient, planSrv))
   {
     //ROS_INFO ("goal not ok, no path from planner");
+    return false;
+  }
+
+  // if goal is too close too current location
+  if (abs (goalCoordinates.at (x) - currentCoordinates.at (x)) < locationThreshold && abs (goalCoordinates.at (y) - currentCoordinates.at (y)) < locationThreshold)
+  {
+    //ROS_INFO ("goal not ok, too close to current location");
     return false;
   }
 
