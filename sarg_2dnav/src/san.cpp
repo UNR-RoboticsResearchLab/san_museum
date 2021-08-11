@@ -5,9 +5,9 @@
 #include "PoseListener.h"
 #include "PeopleListener.h"
 
-int readRoom (int roomDensity, double roomVulnerability);
+char readRoom (int roomDensity, double roomVulnerability);
 
-std::vector <double> findGoal (std::vector <std::vector <double>> peopleLocations, std::vector <double> currentCoordinates, char goalType);
+std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations, char goalType);
 
 bool checkGoal (std::vector <double> currentCoordinates, std::vector <double> goalCoordinates);
 bool goToGoal (std::vector <double> goalCoordinates);
@@ -21,10 +21,11 @@ int main (int argc, char ** argv)
   ros::init (argc, argv, "san");
   //ROS_DEBUG ("initialized node san");
 
+  // declare listeners
+  // PoseListener subscribes to amcl_pose topic
   PoseListener currentPose;
+  // PeopleListener subscribes to people topic
   PeopleListener peoplePresent;
-
-  srand (time (NULL));
 
   ros::Rate loop_rate (1);
   ros::spinOnce ();
@@ -35,47 +36,19 @@ int main (int argc, char ** argv)
   // loop until ctrl-c is pressed or ros::shutdown is called
   while (ros::ok ())
   {
-    std::vector <double> currentLocation = currentPose.getPose ();
-    std::vector <std::vector <double>> people = peoplePresent.sortByReliability ();
+    // room vulnerability: 1 = sociable, 10 = serious
+    double vulnerability = 3;
 
-    int density = people.size ();
-    double vulnerability = rand () % 10 + 1;
-
+    // coordinates of the set goal
     std::vector <double> goal;
 
     // whether or not the goal has been reached
     bool goalReached = false;
 
-    switch (readRoom (density, vulnerability))
-    {
-      // engaging: low vulnerability, low density
-      case 0:
-        ROS_INFO ("engaging behavior");
-        goal = findGoal (people, currentLocation, 'e');
-        goalReached = goToGoal (goal);
-        break;
-
-      // conservative: low vulnerability, high density
-      case 1:
-        ROS_INFO ("conservative behavior");
-        goal = findGoal (people, currentLocation, 'c');
-        goalReached = goToGoal (goal);
-        break;
-
-      // reserved: high vulnerability, low density
-      case 2:
-        ROS_INFO ("reserved behavior");
-        goal = findGoal (people, currentLocation, 'r');
-        goalReached = goToGoal (goal);
-        break;
-
-      // stationary: high vulnerability, high density
-      case 3:
-        ROS_INFO ("stationary behavior");
-        goal = findGoal (people, currentLocation, 's');
-        goalReached = goToGoal (goal);
-        break;
-    }
+    // set a goal based on vulnerability and density
+    goal = findGoal (currentPose.getPose (), peoplePresent.getPeopleLocations (), readRoom (peoplePresent.getPeopleLocations ().size (), vulnerability));
+    // go to goal and check if goal was reached
+    goalReached = goToGoal (goal);
 
     if (goalReached)
     {
@@ -87,7 +60,7 @@ int main (int argc, char ** argv)
       ROS_WARN ("behavior not successful\n");
     }
 
-    // get new position data
+    // get new information from subscriptions
     ros::spinOnce ();
     loop_rate.sleep();
   }
@@ -95,7 +68,7 @@ int main (int argc, char ** argv)
   return 0;
 }
 
-int readRoom (int roomDensity, double roomVulnerability)
+char readRoom (int roomDensity, double roomVulnerability)
 {
   // midpoint between high and low density
   int mediumDensity = 5;
@@ -120,38 +93,50 @@ int readRoom (int roomDensity, double roomVulnerability)
   // return room reading
   if (highVulnerability == false)
   {
+    // ROS_INFO ("low vulnerability");
     if (highDensity == false)
     {
       // engaging
-      return 0;
+      // ROS_INFO ("low density");
+      return 'e';
     }
 
     // conservative
-    return 1;
+    // ROS_INFO ("high density")
+    return 'c';
   }
+
+  // ROS_INFO ("high vulnerability");
 
   if (highDensity == false)
   {
     // reserved
-    return 2;
+    // ROS_INFO ("low density");
+    return 'r';
   }
 
   // stationary
-  return 3;
+  // ROS_INFO ("high density");
+  return 's';
 }
 
-std::vector <double> findGoal (std::vector <std::vector <double>> peopleLocations, std::vector <double> currentCoordinates, char goalType)
+std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations, char goalType)
 {
+  // for use of the at () vector function
   int x = 0;
   int y = 1;
 
-  std::vector <double> origin (2, 0);
+  // the "kiosk" location for the robot to stay in during stationary behavior
   std::vector <double> stationaryLocation = {27.5, -41.5};
+  // a set of predetermined locations for the robot to go to during reserved behavior
   std::vector <std::vector <double>> reservedLocations = {{31.6, -43.9}, {28.5, -44.3}, {27.6, -37.6}};
 
+  // stores goals to be tested
   std::vector <double> potentialGoal;
+  // whether or not the goal meets the requirements
   bool goalIsOk = false;
 
+  // search for a goal
   switch (goalType)
   {
     // engaging
@@ -159,36 +144,47 @@ std::vector <double> findGoal (std::vector <std::vector <double>> peopleLocation
     {
       // todo: set speed to normal
 
+      ROS_INFO ("engaging behavior");
+
       int index = peopleLocations.size ();
 
       do
       {
+        // iterate through the people vector backwards (its sorted from least reliable to most)
         index -= 1;
 
+        // forget the previous invalid goal
         potentialGoal.clear ();
 
+        // set a new goal halfway between the robot and a person
         potentialGoal.push_back ((currentCoordinates.at (x) + peopleLocations.at (index).at (x)) / 2);
         potentialGoal.push_back ((currentCoordinates.at (y) + peopleLocations.at (index).at (y)) / 2);
 
+        // test the goal
         goalIsOk = checkGoal (currentCoordinates, potentialGoal);
       }
+      // while there is a person location to test and a valid goal has not been found
       while (index > 0 && !goalIsOk);
 
-      // if goal has not been found
+      // if goal between a person has not been found
       if (!goalIsOk)
       {
         ROS_INFO ("could not find person to interact with, falling back to wandering");
         srand (time (NULL));
-        // wander to convey less serious tone within museum
+        // wander randomly to convey less serious tone within museum
         do
         {
+          // forget the previous invalid goal
           potentialGoal.clear ();
 
+          // set a goal at a random location relative to the robot's current location
           potentialGoal.push_back (currentCoordinates.at (x) + (rand () % 100 - 50) / 10);
           potentialGoal.push_back (currentCoordinates.at (y) + (rand () % 100 - 50) / 10);
 
+          // test the goal
           goalIsOk = checkGoal (currentCoordinates, potentialGoal);
         }
+        // while a valid goal has not been found
         while (!goalIsOk);
       }
 
@@ -199,19 +195,26 @@ std::vector <double> findGoal (std::vector <std::vector <double>> peopleLocation
     {
       // todo: set speed to slow
 
+      ROS_INFO ("conservative behavior");
+
       int index = peopleLocations.size ();
 
       do
       {
+        // iterate through the people vector backwards (its sorted from least reliable to most)
         index -= 1;
 
+        // forget the previous invalid goal
         potentialGoal.clear ();
 
+        // set a new goal, todo: keep a larger distance from people
         potentialGoal.push_back ((currentCoordinates.at (x) + peopleLocations.at (index).at (x)) / 2);
         potentialGoal.push_back ((currentCoordinates.at (y) + peopleLocations.at (index).at (y)) / 2);
 
+        // test the goal
         goalIsOk = checkGoal (currentCoordinates, potentialGoal);
       }
+      // while a valid goal has not been found
       while (index > 0 && !goalIsOk);
 
       // if goal has not been found
@@ -230,6 +233,8 @@ std::vector <double> findGoal (std::vector <std::vector <double>> peopleLocation
     case 'r':
     {
       // todo: set speed to slower
+
+      ROS_INFO ("reserved behavior");
 
       bool alreadyAtReservedLocation;
 
@@ -277,6 +282,8 @@ std::vector <double> findGoal (std::vector <std::vector <double>> peopleLocation
     case 's':
     {
       // todo: set speed to slowest
+
+      ROS_INFO ("stationary behavior");
 
       // go to designated stationary location
 

@@ -2,7 +2,7 @@
 
 std::vector <std::vector <double>> PeopleListener::getPeopleLocations ()
 {
-  return peopleLocations;
+  return sortByReliability ();
 }
 
 std::vector <std::vector <double>> PeopleListener::sortByReliability ()
