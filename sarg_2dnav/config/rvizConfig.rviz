@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /Grid1
         - /TF1/Tree1
+        - /Map1
         - /Map1/Position1
         - /LaserScan1
         - /Marker1
@@ -67,9 +68,11 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
+        base_footprint:
           Value: true
-        laser:
+        base_laser_link:
+          Value: true
+        base_link:
           Value: true
         map:
           Value: true
@@ -84,9 +87,10 @@ Visualization Manager:
       Tree:
         map:
           odom:
-            base_link:
-              laser:
-                {}
+            base_footprint:
+              base_link:
+                base_laser_link:
+                  {}
       Update Interval: 0
       Value: true
     - Alpha: 0.699999988079071
@@ -132,9 +136,7 @@ Visualization Manager:
       Marker Topic: /visualization_marker
       Name: Marker
       Namespaces:
-        LEGS: true
-        PEOPLE: true
-        velocities: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1

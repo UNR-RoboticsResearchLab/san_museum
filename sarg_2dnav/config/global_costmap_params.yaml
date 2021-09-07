@@ -1,11 +1,9 @@
-global_costmap:
-  global_frame: map
-  robot_base_frame: base_link
-  update_frequency: 5.0
-  static_map: true
-  #set to true when you have a map made
-
+global_frame: map
+robot_base_frame: base_link
 
 plugins:
-#  - {name: obstacles,   type: "costmap_2d::VoxelLayer"}
   - {name: static_map,  type: "costmap_2d::StaticLayer"}
+  - {name: inflation,  type: "costmap_2d::InflationLayer"} # size of robot
+
+inflation:
+  inflation_radius: 0.3

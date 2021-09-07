@@ -19,6 +19,10 @@
   <!-- load move_base and configuration -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <!--<param name="controller_frequency" type="int" value="5"/>-->
+
+    <!-- change local planner -->
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
+
     <rosparam file="$(find sarg_2dnav)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find sarg_2dnav)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
     <rosparam file="$(find sarg_2dnav)/config/local_costmap_params.yaml" command="load"/>

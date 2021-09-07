@@ -1,9 +1,19 @@
-local_costmap:
-  global_frame: map
-  robot_base_frame: base_link
-  update_frequency: 5.0
-  publish_frequency: 2.0
-  rolling_window: true
-  width: 10.0
-  height: 10.0
-  resolution: 0.05
+footprint: [[.36, .25], [.36, -0.25], [-0.29, -0.25], [-0.29, .25]]
+
+robot_base_frame: base_link
+rolling_window: true
+update_frequency: 5.0
+publish_frequency: 1.0
+
+plugins:
+  - {name: obstacles, type: "costmap_2d::VoxelLayer"} # laser scans
+  - {name: inflation,  type: "costmap_2d::InflationLayer"} # size of robot
+  #- {name: social_layer, type: "social_navigation_layers::ProxemicLayer"} # people detection
+  #- {name: social_pass_layer, type: "social_navigation_layers::PassingLayer"} # people detection
+
+obstacles:
+  observation_sources: scan
+  scan: {data_type: LaserScan, sensor_frame: base_laser_link, clearing: true, marking: true, topic: scan, obstacle_range: 15.0, raytrace_range: 5.0}
+
+inflation:
+  inflation_radius: 0.3

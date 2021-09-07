@@ -19,13 +19,15 @@
   <!-- load move_base and configuration -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <!--<param name="controller_frequency" type="int" value="5"/>-->
-    <rosparam file="$(find sarg_2dnav)/config/costmap_common_params-sim.yaml" command="load" ns="global_costmap"/>
-    <rosparam file="$(find sarg_2dnav)/config/costmap_common_params-sim.yaml" command="load" ns="local_costmap"/>
-    <rosparam file="$(find sarg_2dnav)/config/local_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find sarg_2dnav)/config/global_costmap_params.yaml" command="load"/>
+
+    <!-- change local planner -->
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
+
+    <rosparam file="$(find sarg_2dnav)/config/global_costmap_params.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(find sarg_2dnav)/config/local_costmap_params.yaml" command="load" ns="local_costmap"/>
     <rosparam file="$(find sarg_2dnav)/config/base_local_planner_params.yaml" command="load"/>
   </node>
 
   <!-- relay base_scan to scan since they have the same msg -->
-  <node pkg="topic_tools" type="relay" name="relay_scan" args="/base_scan /scan"/>
+  <node pkg="topic_tools" type="relay" name="relay_scan" args="base_scan scan"/>
 </launch>
