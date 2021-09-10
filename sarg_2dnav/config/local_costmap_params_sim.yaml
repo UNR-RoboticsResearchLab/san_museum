@@ -24,7 +24,7 @@ obstacles:
   scan:
     {
     topic: scan,
-    sensor_frame: laser,
+    sensor_frame: base_laser_link,
     observation_persistence: 0.0,
     expected_update_rate: 0.0,
     data_type: LaserScan,
