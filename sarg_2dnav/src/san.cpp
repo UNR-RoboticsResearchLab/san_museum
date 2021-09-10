@@ -4,6 +4,7 @@
 
 #include "PoseListener.h"
 #include "PeopleListener.h"
+#include "MovementConfigurator.h"
 
 char readRoom (int roomDensity, double roomVulnerability);
 
@@ -126,6 +127,8 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
   int x = 0;
   int y = 1;
 
+  MovementConfigurator movementLimiter;
+
   // the "kiosk" location for the robot to stay in during stationary behavior
   std::vector <double> stationaryLocation = {27.5, -41.5};
   // a set of predetermined locations for the robot to go to during reserved behavior
@@ -142,9 +145,9 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
     // engaging
     case 'e':
     {
-      // todo: set speed to normal
-
       ROS_INFO ("engaging behavior");
+
+      movementLimiter.setVelocityLimit ('x', 0.45);
 
       int index = peopleLocations.size ();
 
@@ -193,9 +196,9 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
     // conservative
     case 'c':
     {
-      // todo: set speed to slow
-
       ROS_INFO ("conservative behavior");
+
+      movementLimiter.setVelocityLimit ('x', 0.35);
 
       int index = peopleLocations.size ();
 
@@ -232,9 +235,9 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
     // reserved
     case 'r':
     {
-      // todo: set speed to slower
-
       ROS_INFO ("reserved behavior");
+
+      movementLimiter.setVelocityLimit ('x', 0.25);
 
       bool alreadyAtReservedLocation;
 
@@ -281,9 +284,9 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
     // stationary
     case 's':
     {
-      // todo: set speed to slowest
-
       ROS_INFO ("stationary behavior");
+
+      movementLimiter.setVelocityLimit ('x', 0.15);
 
       // go to designated stationary location
 
