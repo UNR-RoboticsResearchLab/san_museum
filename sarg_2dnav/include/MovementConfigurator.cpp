@@ -33,7 +33,7 @@ void MovementConfigurator::setAccelerationLimit (char type, double limit)
 
   request.config = config;
 
-  ros::service::call ("move_base/DWAPlannerROS/set_parameters", request, response);
+  ros::service::call ("move_base/TrajectoryPlannerROS/set_parameters", request, response);
 }
 
 void MovementConfigurator::setVelocityLimit (char type, double limit)
@@ -69,5 +69,5 @@ void MovementConfigurator::setVelocityLimit (char type, double limit)
   request.config = config;
 
   // thanks https://answers.ros.org/question/12276/is-there-a-c-api-for-a-dynamic-reconfigure-client/?answer=64043#post-id-64043
-  ros::service::call ("move_base/DWAPlannerROS/set_parameters", request, response);
+  ros::service::call ("move_base/TrajectoryPlannerROS/set_parameters", request, response);
 }
