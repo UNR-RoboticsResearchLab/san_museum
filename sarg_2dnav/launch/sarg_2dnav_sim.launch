@@ -12,7 +12,7 @@
   <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/3rd.yaml"/> -->
   <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/upper.yaml"/> -->
   <!-- <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/demo.yaml"/> -->
-  <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/pebfirst.yaml"/>
+  <node name="map_edited" pkg="map_server" type="map_server" args="$(find sarg_2dnav)/maps/pebfirst_clean.yaml"/>
 
   <!--- Run AMCL -->
   <include file="$(find amcl)/examples/amcl_omni.launch"/>
@@ -23,6 +23,8 @@
 
     <!-- change local planner -->
     <!-- <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/> -->
+    <!-- <param name="base_local_planner" value="san_trajectory_planner/TrajectoryPlannerROS"/> -->
+    <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/> 
 
     <rosparam file="$(find sarg_2dnav)/config/global_costmap_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find sarg_2dnav)/config/local_costmap_params_sim.yaml" command="load" ns="local_costmap"/>
@@ -31,4 +33,7 @@
 
   <!-- relay base_scan to scan since they have the same msg -->
   <node pkg="topic_tools" type="relay" name="relay_scan" args="base_scan scan"/>
+
+  <!-- looks moving objects in stage will have to be represented by robots -->
+  <!-- check https://answers.ros.org/question/41433/multiple-robots-simulation-and-navigation/ for a multi robot simulation tutorial -->
 </launch>

@@ -50,18 +50,18 @@ inflation:
   inflation_radius: 0.3
   cost_scaling_factor: 10.0
 
-#social:
-#  enabled: true
-#  cutoff: 10.0
-#  amplitude: 77.0
-#  covariance: 0.25
-#  factor: 5.0
-#  keep_time: 0.75
+social:
+  enabled: true
+  cutoff: 10.0
+  amplitude: 77.0
+  covariance: 0.25
+  factor: 5.0
+  keep_time: 0.75
 
-#passing:
-#  enabled: true
-#  cutoff: 10.0
-#  amplitude: 77.0
-#  covariance: 0.25
-#  factor: 5.0
-#  keep_time: 0.75
+passing:
+  enabled: true
+  cutoff: 10.0
+  amplitude: 77.0
+  covariance: 0.25
+  factor: 5.0
+  keep_time: 0.75
