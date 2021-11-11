@@ -47,6 +47,11 @@ add_message_files(
     Position2DInt.msg
 )
 
+add_service_files (
+  FILES
+  trajectoryPointService.srv
+)
+
 generate_messages(
     DEPENDENCIES
         std_msgs
@@ -109,7 +114,8 @@ add_library(base_local_planner
 	src/simple_trajectory_generator.cpp
 	src/trajectory.cpp
 	src/twirling_cost_function.cpp
-	src/voxel_grid_model.cpp)
+	src/voxel_grid_model.cpp
+  src/PaCcET.cpp)
 add_dependencies(base_local_planner base_local_planner_gencfg)
 add_dependencies(base_local_planner base_local_planner_generate_messages_cpp)
 add_dependencies(base_local_planner nav_msgs_generate_messages_cpp)
