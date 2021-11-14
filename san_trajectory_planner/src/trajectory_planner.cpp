@@ -35,7 +35,8 @@
 * Author: Eitan Marder-Eppstein
 *********************************************************************/
 
-#include <base_local_planner/trajectory_planner.h>
+//#include <base_local_planner/trajectory_planner.h>
+#include <san_trajectory_planner/trajectory_planner_ros.h>
 #include <costmap_2d/footprint.h>
 #include <string>
 #include <sstream>
@@ -43,8 +44,8 @@
 #include <angles/angles.h>
 #include <geometry_msgs/Point32.h>
 
-#include <base_local_planner/trajectoryPointService.h>
-#include <base_local_planner/point_grid.h>
+#include <san_trajectory_planner/trajectoryPointService.h>
+#include <san_trajectory_planner/point_grid.h>
 #include <san_feature_extractor/Trajectory.h>
 
 #include <boost/algorithm/string.hpp>
@@ -190,7 +191,7 @@ ros::Subscriber sub3 = n.subscribe("/transformed_human3", 1000, robot3Callback);
 ros::Subscriber sub4 = n.subscribe("/transformed_center", 1000, centerCallback);
 ros::Subscriber sub5 = n.subscribe("/transformed_intended_position", 1000, intentCallback);
 
-TrajectoryPlanner::TrajectoryPlanner(base_local_planner::WorldModel& world_model,
+TrajectoryPlanner::TrajectoryPlanner(WorldModel& world_model,
                                      const Costmap2D& costmap,
                                      std::vector<geometry_msgs::Point> footprint_spec,
                                      double acc_lim_x, double acc_lim_y, double acc_lim_theta,
@@ -246,8 +247,8 @@ TrajectoryPlanner::~TrajectoryPlanner(){
 }
 
 bool TrajectoryPlanner::getCellCosts(int cx, int cy, float &path_cost, float &goal_cost, float &occ_cost, float &total_cost) {
-	base_local_planner::MapCell cell = path_map_(cx, cy);
-	base_local_planner::MapCell goal_cell = goal_map_(cx, cy);
+	MapCell cell = path_map_(cx, cy);
+	MapCell goal_cell = goal_map_(cx, cy);
 	if (cell.within_robot) {
 		return false;
 	}
@@ -272,7 +273,7 @@ void TrajectoryPlanner::generateTrajectory(
 	double vx_samp, double vy_samp, double vtheta_samp,
 	double acc_x, double acc_y, double acc_theta,
 	double impossible_cost,
-	base_local_planner::Trajectory& traj) {
+	Trajectory& traj) {
 
 	// make sure the configuration doesn't change mid run
 	boost::mutex::scoped_lock l(configuration_mutex_);
@@ -736,7 +737,7 @@ void TrajectoryPlanner::updatePlan(const vector<geometry_msgs::PoseStamped>& new
 
 bool TrajectoryPlanner::checkTrajectory(double x, double y, double theta, double vx, double vy,
                                         double vtheta, double vx_samp, double vy_samp, double vtheta_samp){
-	base_local_planner::Trajectory t;
+	Trajectory t;
 
 	double cost = scoreTrajectory(x, y, theta, vx, vy, vtheta, vx_samp, vy_samp, vtheta_samp);
 
@@ -752,7 +753,7 @@ bool TrajectoryPlanner::checkTrajectory(double x, double y, double theta, double
 
 double TrajectoryPlanner::scoreTrajectory(double x, double y, double theta, double vx, double vy,
                                           double vtheta, double vx_samp, double vy_samp, double vtheta_samp) {
-	base_local_planner::Trajectory t;
+	Trajectory t;
 	double impossible_cost = path_map_.obstacleCosts();
 	generateTrajectory(x, y, theta,
 	                   vx, vy, vtheta,
@@ -765,7 +766,7 @@ double TrajectoryPlanner::scoreTrajectory(double x, double y, double theta, doub
 }
 
 //Calculates the fintess value for the inter personal distance objective
-vector<double> TrajectoryPlanner::Calculate_Interpersonal_Distance_Fitness(base_local_planner::Trajectory& p_traj){
+vector<double> TrajectoryPlanner::Calculate_Interpersonal_Distance_Fitness(Trajectory& p_traj){
 	//this assumes pestimistic view
 	double inter_dist_fitness1 = 1000000000;
 	double inter_dist_fitness2 = 1000000000;
@@ -860,7 +861,7 @@ vector<double> TrajectoryPlanner::Calculate_Interpersonal_Distance_Fitness(base_
 	return inter_dist_fitness;
 }
 
-double TrajectoryPlanner::calculateRadiusFitness(base_local_planner::Trajectory& p_traj)
+double TrajectoryPlanner::calculateRadiusFitness(Trajectory& p_traj)
 {
 	double radius_fitness = 1000000000;
 	double d_center_threshold = 1.5;
@@ -880,7 +881,7 @@ double TrajectoryPlanner::calculateRadiusFitness(base_local_planner::Trajectory&
 	return radius_fitness;
 }
 
-double TrajectoryPlanner::calculateIntentFitness(base_local_planner::Trajectory& p_traj)
+double TrajectoryPlanner::calculateIntentFitness(Trajectory& p_traj)
 {
 	double intent_fitness = 1000000000;
 
@@ -900,20 +901,20 @@ double TrajectoryPlanner::calculateIntentFitness(base_local_planner::Trajectory&
 
 //Checks to see where in the current population of trajectories the passed in trajectory should be placed based on its PaCcET fitness
 struct TrajectoryPlanner::Less_Than_Policy_Fitness {
-	inline bool operator() (const base_local_planner::Trajectory& struct1, const base_local_planner::Trajectory& struct2){
+	inline bool operator() (const Trajectory& struct1, const Trajectory& struct2){
 		return (struct1.paccet_fitness < struct2.paccet_fitness);
 	}
 };
 
 //Sorts the population of trajectories based on their PaCcET fitness from lowest to highest by passing in one trajectoriy at a time to the sort function
-void TrajectoryPlanner::Sort_Policies_By_Fitness(std::vector<base_local_planner::Trajectory> *pac_traj){
+void TrajectoryPlanner::Sort_Policies_By_Fitness(std::vector<Trajectory> *pac_traj){
 	for (int i=0; i<pac_traj->size(); i++) {
 		sort(pac_traj->begin(), pac_traj->end(), Less_Than_Policy_Fitness());
 	}
 }
 
 //Stores the trajectory if it is a legal movement
-void TrajectoryPlanner::Store_trajectory(std::vector<base_local_planner::Trajectory> *pac_traj, base_local_planner::Trajectory& traj){
+void TrajectoryPlanner::Store_trajectory(std::vector<Trajectory> *pac_traj, Trajectory& traj){
 	if (traj.cost_ >=0) {                       //Ssing the cost/fitness of the first objective if the cost is greater than or equal to zero the trajectory is valid
 		//assert(traj.objectives.size()==4);
 		pac_traj->push_back(traj);    //Since the trajectory is valid it is stored in a vector of type trajectory
@@ -926,7 +927,7 @@ void TrajectoryPlanner::Store_trajectory(std::vector<base_local_planner::Traject
 
 
 //Gets PaCcET fitness for a trajectory
-void TrajectoryPlanner::PaCcET_Fitness(PaCcET *pT, int i, std::vector<base_local_planner::Trajectory> *pac_traj)
+void TrajectoryPlanner::PaCcET_Fitness(PaCcET *pT, int i, std::vector<Trajectory> *pac_traj)
 {
 	std::vector<double> MO;             //Creates a multi-objective vector of doubles to store the fitness score for each objective
 	std::vector<double>* pMO = &MO;     //Sets a point to address of the previously made vector of doubles
@@ -952,11 +953,11 @@ void TrajectoryPlanner::PaCcET_Fitness(PaCcET *pT, int i, std::vector<base_local
 
 
 //Gets the PaCcET fitness for each ptrajectory
-void TrajectoryPlanner::Get_PaCcET_Fitness(PaCcET *pT, std::vector<base_local_planner::Trajectory> *pac_traj)
+void TrajectoryPlanner::Get_PaCcET_Fitness(PaCcET *pT, std::vector<Trajectory> *pac_traj)
 {
 	//for each trajectory this for loop takes each of the objectives fitness scores and pushes them into a objectives vector of type double
 	for (int i=0; i<pac_traj->size(); i++) {
-		base_local_planner::Trajectory* p_traj = &pac_traj->at(i); //SBB this where you start!
+		Trajectory* p_traj = &pac_traj->at(i); //SBB this where you start!
 		pac_traj->at(i).inter_dist_fitness.clear();
 		pac_traj->at(i).inter_dist_fitness = Calculate_Interpersonal_Distance_Fitness(*p_traj);
 		pac_traj->at(i).radius_fitness = calculateRadiusFitness(*p_traj);
@@ -994,7 +995,7 @@ void TrajectoryPlanner::Get_PaCcET_Fitness(PaCcET *pT, std::vector<base_local_pl
 /*
  * create the trajectories we wish to score
  */
-base_local_planner::Trajectory TrajectoryPlanner::createTrajectories(double x, double y, double theta,
+Trajectory TrajectoryPlanner::createTrajectories(double x, double y, double theta,
                                                                      double vx, double vy, double vtheta,
                                                                      double acc_x, double acc_y, double acc_theta) {
 	//compute feasible velocity limits in robot space
@@ -1031,16 +1032,16 @@ base_local_planner::Trajectory TrajectoryPlanner::createTrajectories(double x, d
 	double vy_samp = 0.0;
 
 	//keep track of the best trajectory seen so far
-	base_local_planner::Trajectory* best_traj = &traj_one;
-	std::vector<base_local_planner::Trajectory> pac_traj;
+	Trajectory* best_traj = &traj_one;
+	std::vector<Trajectory> pac_traj;
 
 	best_traj->cost_ = -1.0;
 	pac_traj.resize (0);
 
-	base_local_planner::Trajectory* comp_traj = &traj_two;
+	Trajectory* comp_traj = &traj_two;
 	comp_traj->cost_ = -1.0;
 
-	base_local_planner::Trajectory* swap = NULL;
+	Trajectory* swap = NULL;
 
 	//any cell with a cost greater than the size of the map is impossible
 	double impossible_cost = path_map_.obstacleCosts();
@@ -1419,7 +1420,7 @@ base_local_planner::Trajectory TrajectoryPlanner::createTrajectories(double x, d
 }
 
 //given the current state of the robot, find a good trajectory
-base_local_planner::Trajectory TrajectoryPlanner::findBestPath(const geometry_msgs::PoseStamped& global_pose,
+Trajectory TrajectoryPlanner::findBestPath(const geometry_msgs::PoseStamped& global_pose,
                                                                geometry_msgs::PoseStamped& global_vel, geometry_msgs::PoseStamped& drive_velocities) {
 
 	Eigen::Vector3f pos(global_pose.pose.position.x, global_pose.pose.position.y, tf2::getYaw(global_pose.pose.orientation));
@@ -1448,7 +1449,7 @@ base_local_planner::Trajectory TrajectoryPlanner::findBestPath(const geometry_ms
 	ROS_DEBUG("Path/Goal distance computed");
 
 	//rollout trajectories and find the minimum cost one
-	base_local_planner::Trajectory best = createTrajectories(pos[0], pos[1], pos[2],
+	Trajectory best = createTrajectories(pos[0], pos[1], pos[2],
 	                                                         vel[0], vel[1], vel[2],
 	                                                         acc_lim_x_, acc_lim_y_, acc_lim_theta_);
 	ROS_DEBUG("Trajectories created");

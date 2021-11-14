@@ -31,14 +31,16 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#include <base_local_planner/map_grid_visualizer.h>
-#include <base_local_planner/map_cell.h>
+#include <san_trajectory_planner/map_grid_visualizer.h>
+#include <san_trajectory_planner/map_cell.h>
 #include <vector>
 
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 
-namespace base_local_planner {
+#include <pcl_conversions/pcl_conversions.h>
+
+namespace san_trajectory_planner {
   MapGridVisualizer::MapGridVisualizer() {}
 
 

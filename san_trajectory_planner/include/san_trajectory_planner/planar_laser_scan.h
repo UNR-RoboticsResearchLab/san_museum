@@ -40,7 +40,7 @@
 #include <geometry_msgs/Point32.h>
 #include <sensor_msgs/PointCloud.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
   /**
    * @class PlanarLaserScan
    * @brief Stores a scan from a planar laser that can be used to clear freespace

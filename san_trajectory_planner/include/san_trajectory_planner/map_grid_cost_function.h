@@ -38,12 +38,12 @@
 #ifndef MAP_GRID_COST_FUNCTION_H_
 #define MAP_GRID_COST_FUNCTION_H_
 
-#include <base_local_planner/trajectory_cost_function.h>
+#include <san_trajectory_planner/trajectory_cost_function.h>
 
 #include <costmap_2d/costmap_2d.h>
-#include <base_local_planner/map_grid.h>
+#include <san_trajectory_planner/map_grid.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 /**
  * when scoring a trajectory according to the values in mapgrid, we can take
@@ -70,7 +70,7 @@ enum CostAggregationType { Last, Sum, Product};
  * @param is_local_goal_function, scores for local goal rather than whole path
  * @param aggregationType how to combine costs along trajectory
  */
-class MapGridCostFunction: public base_local_planner::TrajectoryCostFunction {
+class MapGridCostFunction: public TrajectoryCostFunction {
 public:
   MapGridCostFunction(costmap_2d::Costmap2D* costmap,
       double xshift = 0.0,
@@ -122,7 +122,7 @@ private:
   std::vector<geometry_msgs::PoseStamped> target_poses_;
   costmap_2d::Costmap2D* costmap_;
 
-  base_local_planner::MapGrid map_;
+  MapGrid map_;
   CostAggregationType aggregationType_;
   /// xshift and yshift allow scoring for different
   // ooints of robots than center, like fron or back

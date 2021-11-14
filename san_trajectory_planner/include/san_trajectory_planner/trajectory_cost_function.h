@@ -35,40 +35,52 @@
  * Author: TKruse
  *********************************************************************/
 
-#ifndef TRAJECTORY_SAMPLE_GENERATOR_H_
-#define TRAJECTORY_SAMPLE_GENERATOR_H_
+#ifndef TRAJECTORYCOSTFUNCTION_H_
+#define TRAJECTORYCOSTFUNCTION_H_
 
-#include <base_local_planner/trajectory.h>
+#include <san_trajectory_planner/trajectory.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 /**
- * @class TrajectorySampleGenerator
- * @brief Provides an interface for navigation trajectory generators
+ * @class TrajectoryCostFunction
+ * @brief Provides an interface for critics of trajectories
+ * During each sampling run, a batch of many trajectories will be scored using such a cost function.
+ * The prepare method is called before each batch run, and then for each
+ * trajectory of the sampling set, score_trajectory may be called.
  */
-class TrajectorySampleGenerator {
+class TrajectoryCostFunction {
 public:
 
   /**
-   * Whether this generator can create more trajectories
+   *
+   * General updating of context values if required.
+   * Subclasses may overwrite. Return false in case there is any error.
    */
-  virtual bool hasMoreTrajectories() = 0;
+  virtual bool prepare() = 0;
 
   /**
-   * Whether this generator can create more trajectories
+   * return a score for trajectory traj
    */
-  virtual bool nextTrajectory(Trajectory &traj) = 0;
+  virtual double scoreTrajectory(Trajectory &traj) = 0;
 
-  /**
-   * @brief  Virtual destructor for the interface
-   */
-  virtual ~TrajectorySampleGenerator() {}
+  double getScale() {
+    return scale_;
+  }
+
+  void setScale(double scale) {
+    scale_ = scale;
+  }
+
+  virtual ~TrajectoryCostFunction() {}
 
 protected:
-  TrajectorySampleGenerator() {}
+  TrajectoryCostFunction(double scale = 1.0): scale_(scale) {}
 
+private:
+  double scale_;
 };
 
-} // end namespace
+}
 
-#endif /* TRAJECTORY_SAMPLE_GENERATOR_H_ */
+#endif /* TRAJECTORYCOSTFUNCTION_H_ */

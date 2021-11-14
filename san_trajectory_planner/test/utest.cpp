@@ -36,11 +36,11 @@
 #include <vector>
 #include <utility>
 
-#include <base_local_planner/map_cell.h>
-#include <base_local_planner/map_grid.h>
-#include <base_local_planner/trajectory.h>
-#include <base_local_planner/trajectory_planner.h>
-#include <base_local_planner/costmap_model.h>
+#include <san_trajectory_planner/map_cell.h>
+#include <san_trajectory_planner/map_grid.h>
+#include <san_trajectory_planner/trajectory.h>
+#include <san_trajectory_planner/trajectory_planner.h>
+#include <san_trajectory_planner/costmap_model.h>
 #include <costmap_2d/costmap_2d.h>
 #include <math.h>
 
@@ -51,7 +51,7 @@
 
 using namespace std;
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 class TrajectoryPlannerTest : public testing::Test {
   public:
@@ -189,7 +189,7 @@ TrajectoryPlannerTest* setup_testclass_singleton() {
     pt.y = 2;
     footprint_spec.push_back(pt);
 
-    tct = new base_local_planner::TrajectoryPlannerTest(mg, wa, map, footprint_spec);
+    tct = new TrajectoryPlannerTest(mg, wa, map, footprint_spec);
   }
   return tct;
 }

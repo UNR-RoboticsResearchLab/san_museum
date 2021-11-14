@@ -31,9 +31,9 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#include <base_local_planner/trajectory.h>
+#include <san_trajectory_planner/trajectory.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
   Trajectory::Trajectory()
     : xv_(0.0), yv_(0.0), thetav_(0.0), cost_(-1.0)
   {

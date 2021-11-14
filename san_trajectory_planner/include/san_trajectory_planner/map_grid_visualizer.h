@@ -35,10 +35,12 @@
 #define MAP_GRID_VISUALIZER_H_
 
 #include <ros/ros.h>
-#include <base_local_planner/map_grid.h>
+#include <san_trajectory_planner/map_grid.h>
 #include <costmap_2d/costmap_2d.h>
+#include <san_trajectory_planner/map_grid_cost_point.h>
+#include <pcl_ros/publisher.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
     class MapGridVisualizer {
         public:
             /**

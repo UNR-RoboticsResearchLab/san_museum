@@ -9,9 +9,9 @@
 
 #include <vector>
 
-#include <base_local_planner/simple_trajectory_generator.h>
+#include <san_trajectory_planner/simple_trajectory_generator.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 class TrajectoryGeneratorTest : public testing::Test {
 public:
@@ -22,5 +22,5 @@ public:
 
   virtual void TestBody(){}
 };
-  
+
 }

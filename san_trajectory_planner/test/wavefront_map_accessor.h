@@ -8,7 +8,7 @@
 #ifndef WAVEFRONT_MAP_ACCESSOR_H_
 #define WAVEFRONT_MAP_ACCESSOR_H_
 #include <costmap_2d/cost_values.h>
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 /**
  * Map_grids rely on costmaps to identify obstacles. We need a costmap that we can easily manipulate for unit tests.

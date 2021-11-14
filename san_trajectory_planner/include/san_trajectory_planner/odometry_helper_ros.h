@@ -35,37 +35,58 @@
  * Author: TKruse
  *********************************************************************/
 
-#ifndef TRAJECTORY_SEARCH_H_
-#define TRAJECTORY_SEARCH_H_
+#ifndef ODOMETRY_HELPER_ROS2_H_
+#define ODOMETRY_HELPER_ROS2_H_
 
-#include <base_local_planner/trajectory.h>
+#include <nav_msgs/Odometry.h>
+#include <ros/ros.h>
+#include <boost/thread.hpp>
+#include <geometry_msgs/PoseStamped.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
-/**
- * @class TrajectorySearch
- * @brief Interface for modules finding a trajectory to use for navigation commands next
- */
-class TrajectorySearch {
+class OdometryHelperRos {
 public:
+
+  /** @brief Constructor.
+   * @param odom_topic The topic on which to subscribe to Odometry
+   *        messages.  If the empty string is given (the default), no
+   *        subscription is done. */
+  OdometryHelperRos(std::string odom_topic = "");
+  ~OdometryHelperRos() {}
+
   /**
-   * searches the space of allowed trajectory and
-   * returns one considered the optimal given the
-   * constraints of the particular search.
-   *
-   * @param traj The container to write the result to
-   * @param all_explored pass NULL or a container to collect all trajectories for debugging (has a penalty)
+   * @brief  Callback for receiving odometry data
+   * @param msg An Odometry message
    */
-  virtual bool findBestTrajectory(Trajectory& traj, std::vector<Trajectory>* all_explored) = 0;
+  void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
 
-  virtual ~TrajectorySearch() {}
+  void getOdom(nav_msgs::Odometry& base_odom);
 
-protected:
-  TrajectorySearch() {}
+  void getRobotVel(geometry_msgs::PoseStamped& robot_vel);
 
+  /** @brief Set the odometry topic.  This overrides what was set in the constructor, if anything.
+   *
+   * This unsubscribes from the old topic (if any) and subscribes to the new one (if any).
+   *
+   * If odom_topic is the empty string, this just unsubscribes from the previous topic. */
+  void setOdomTopic(std::string odom_topic);
+
+  /** @brief Return the current odometry topic. */
+  std::string getOdomTopic() const { return odom_topic_; }
+
+private:
+  //odom topic
+  std::string odom_topic_;
+
+  // we listen on odometry on the odom topic
+  ros::Subscriber odom_sub_;
+  nav_msgs::Odometry base_odom_;
+  boost::mutex odom_mutex_;
+  // global tf frame id
+  std::string frame_id_; ///< The frame_id associated this data
 };
 
-
-}
-
-#endif /* TRAJECTORY_SEARCH_H_ */
+} /* namespace base_local_planner */
+#define CHUNKY 1
+#endif /* ODOMETRY_HELPER_ROS2_H_ */

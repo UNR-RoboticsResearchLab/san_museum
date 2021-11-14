@@ -35,52 +35,37 @@
  * Author: TKruse
  *********************************************************************/
 
-#ifndef TRAJECTORYCOSTFUNCTION_H_
-#define TRAJECTORYCOSTFUNCTION_H_
+#ifndef TRAJECTORY_SEARCH_H_
+#define TRAJECTORY_SEARCH_H_
 
-#include <base_local_planner/trajectory.h>
+#include <san_trajectory_planner/trajectory.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 /**
- * @class TrajectoryCostFunction
- * @brief Provides an interface for critics of trajectories
- * During each sampling run, a batch of many trajectories will be scored using such a cost function.
- * The prepare method is called before each batch run, and then for each
- * trajectory of the sampling set, score_trajectory may be called.
+ * @class TrajectorySearch
+ * @brief Interface for modules finding a trajectory to use for navigation commands next
  */
-class TrajectoryCostFunction {
+class TrajectorySearch {
 public:
-
   /**
+   * searches the space of allowed trajectory and
+   * returns one considered the optimal given the
+   * constraints of the particular search.
    *
-   * General updating of context values if required.
-   * Subclasses may overwrite. Return false in case there is any error.
+   * @param traj The container to write the result to
+   * @param all_explored pass NULL or a container to collect all trajectories for debugging (has a penalty)
    */
-  virtual bool prepare() = 0;
+  virtual bool findBestTrajectory(Trajectory& traj, std::vector<Trajectory>* all_explored) = 0;
 
-  /**
-   * return a score for trajectory traj
-   */
-  virtual double scoreTrajectory(Trajectory &traj) = 0;
-
-  double getScale() {
-    return scale_;
-  }
-
-  void setScale(double scale) {
-    scale_ = scale;
-  }
-
-  virtual ~TrajectoryCostFunction() {}
+  virtual ~TrajectorySearch() {}
 
 protected:
-  TrajectoryCostFunction(double scale = 1.0): scale_(scale) {}
+  TrajectorySearch() {}
 
-private:
-  double scale_;
 };
+
 
 }
 
-#endif /* TRAJECTORYCOSTFUNCTION_H_ */
+#endif /* TRAJECTORY_SEARCH_H_ */

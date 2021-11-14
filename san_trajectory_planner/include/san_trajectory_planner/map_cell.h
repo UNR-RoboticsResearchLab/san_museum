@@ -1,5 +1,4 @@
 /*********************************************************************
- *
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2008, Willow Garage, Inc.
@@ -15,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
+ *   * Neither the name of the Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -31,59 +30,38 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: TKruse
  *********************************************************************/
+#ifndef TRAJECTORY_ROLLOUT_MAP_CELL_H_
+#define TRAJECTORY_ROLLOUT_MAP_CELL_H_
 
-#ifndef OBSTACLE_COST_FUNCTION_H_
-#define OBSTACLE_COST_FUNCTION_H_
+#include <san_trajectory_planner/trajectory_inc.h>
 
-#include <base_local_planner/trajectory_cost_function.h>
+namespace san_trajectory_planner {
+  /**
+   * @class MapCell
+   * @brief Stores path distance and goal distance information used for scoring trajectories
+   */
+  class MapCell{
+    public:
+      /**
+       * @brief  Default constructor
+       */
+      MapCell();
 
-#include <base_local_planner/costmap_model.h>
-#include <costmap_2d/costmap_2d.h>
+      /**
+       * @brief  Copy constructor
+       * @param mc The MapCell to be copied
+       */
+      MapCell(const MapCell& mc);
 
-namespace base_local_planner {
+      unsigned int cx, cy; ///< @brief Cell index in the grid map
 
-/**
- * class ObstacleCostFunction
- * @brief Uses costmap 2d to assign negative costs if robot footprint
- * is in obstacle on any point of the trajectory.
- */
-class ObstacleCostFunction : public TrajectoryCostFunction {
+      double target_dist; ///< @brief Distance to planner's path
 
-public:
-  ObstacleCostFunction(costmap_2d::Costmap2D* costmap);
-  ~ObstacleCostFunction();
+      bool target_mark; ///< @brief Marks for computing path/goal distances
 
-  bool prepare();
-  double scoreTrajectory(Trajectory &traj);
-
-  void setSumScores(bool score_sums){ sum_scores_=score_sums; }
-
-  void setParams(double max_trans_vel, double max_scaling_factor, double scaling_speed);
-  void setFootprint(std::vector<geometry_msgs::Point> footprint_spec);
-
-  // helper functions, made static for easy unit testing
-  static double getScalingFactor(Trajectory &traj, double scaling_speed, double max_trans_vel, double max_scaling_factor);
-  static double footprintCost(
-      const double& x,
-      const double& y,
-      const double& th,
-      double scale,
-      std::vector<geometry_msgs::Point> footprint_spec,
-      costmap_2d::Costmap2D* costmap,
-      base_local_planner::WorldModel* world_model);
-
-private:
-  costmap_2d::Costmap2D* costmap_;
-  std::vector<geometry_msgs::Point> footprint_spec_;
-  base_local_planner::WorldModel* world_model_;
-  double max_trans_vel_;
-  bool sum_scores_;
-  //footprint scaling with velocity;
-  double max_scaling_factor_, scaling_speed_;
+      bool within_robot; ///< @brief Mark for cells within the robot footprint
+  };
 };
 
-} /* namespace base_local_planner */
-#endif /* OBSTACLE_COST_FUNCTION_H_ */
+#endif

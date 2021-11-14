@@ -32,9 +32,9 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <base_local_planner/map_cell.h>
+#include <san_trajectory_planner/map_cell.h>
 
-namespace base_local_planner{
+namespace san_trajectory_planner{
 
   MapCell::MapCell()
     : cx(0), cy(0),

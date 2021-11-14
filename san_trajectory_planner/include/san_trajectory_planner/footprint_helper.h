@@ -35,55 +35,53 @@
  * Author: TKruse
  *********************************************************************/
 
-#ifndef OSCILLATION_COST_FUNCTION_H_
-#define OSCILLATION_COST_FUNCTION_H_
+#ifndef FOOTPRINT_HELPER_H_
+#define FOOTPRINT_HELPER_H_
 
-#include <base_local_planner/trajectory_cost_function.h>
+#include <vector>
+
+#include <costmap_2d/costmap_2d.h>
+#include <geometry_msgs/Point.h>
 #include <Eigen/Core>
+#include <base_local_planner/Position2DInt.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
-class OscillationCostFunction: public base_local_planner::TrajectoryCostFunction {
+class FootprintHelper {
 public:
-  OscillationCostFunction();
-  virtual ~OscillationCostFunction();
-
-  double scoreTrajectory(Trajectory &traj);
-
-  bool prepare() {return true;};
+  FootprintHelper();
+  virtual ~FootprintHelper();
 
   /**
-   * @brief  Reset the oscillation flags for the local planner
+   * @brief  Used to get the cells that make up the footprint of the robot
+   * @param x_i The x position of the robot
+   * @param y_i The y position of the robot
+   * @param theta_i The orientation of the robot
+   * @param  fill If true: returns all cells in the footprint of the robot. If false: returns only the cells that make up the outline of the footprint.
+   * @return The cells that make up either the outline or entire footprint of the robot depending on fill
    */
-  void resetOscillationFlags();
-
-
-  void updateOscillationFlags(Eigen::Vector3f pos, base_local_planner::Trajectory* traj, double min_vel_trans);
-
-  void setOscillationResetDist(double dist, double angle);
-
-private:
-
-  void resetOscillationFlagsIfPossible(const Eigen::Vector3f& pos, const Eigen::Vector3f& prev);
+  std::vector<base_local_planner::Position2DInt> getFootprintCells(
+      Eigen::Vector3f pos,
+      std::vector<geometry_msgs::Point> footprint_spec,
+      const costmap_2d::Costmap2D&,
+      bool fill);
 
   /**
-   * @brief  Given a trajectory that's selected, set flags if needed to
-   * prevent the robot from oscillating
-   * @param  t The selected trajectory
-   * @return True if a flag was set, false otherwise
+   * @brief  Use Bresenham's algorithm to trace a line between two points in a grid
+   * @param  x0 The x coordinate of the first point
+   * @param  x1 The x coordinate of the second point
+   * @param  y0 The y coordinate of the first point
+   * @param  y1 The y coordinate of the second point
+   * @param  pts Will be filled with the cells that lie on the line in the grid
    */
-  bool setOscillationFlags(base_local_planner::Trajectory* t, double min_vel_trans);
+  void getLineCells(int x0, int x1, int y0, int y1, std::vector<base_local_planner::Position2DInt>& pts);
 
-  // flags
-  bool strafe_pos_only_, strafe_neg_only_, strafing_pos_, strafing_neg_;
-  bool rot_pos_only_, rot_neg_only_, rotating_pos_, rotating_neg_;
-  bool forward_pos_only_, forward_neg_only_, forward_pos_, forward_neg_;
-
-  // param
-  double oscillation_reset_dist_, oscillation_reset_angle_;
-
-  Eigen::Vector3f prev_stationary_pos_;
+  /**
+   * @brief Fill the outline of a polygon, in this case the robot footprint, in a grid
+   * @param footprint The list of cells making up the footprint in the grid, will be modified to include all cells inside the footprint
+   */
+  void getFillCells(std::vector<base_local_planner::Position2DInt>& footprint);
 };
 
 } /* namespace base_local_planner */
-#endif /* OSCILLATION_COST_FUNCTION_H_ */
+#endif /* FOOTPRINT_HELPER_H_ */

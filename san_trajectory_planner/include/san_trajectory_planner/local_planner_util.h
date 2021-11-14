@@ -45,10 +45,10 @@
 #include <costmap_2d/costmap_2d.h>
 #include <tf2_ros/buffer.h>
 
-#include <base_local_planner/local_planner_limits.h>
+#include <san_trajectory_planner/local_planner_limits.h>
 
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 /**
  * @class LocalPlannerUtil

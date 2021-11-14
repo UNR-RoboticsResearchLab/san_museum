@@ -35,9 +35,9 @@
  * Author: TKruse
  *********************************************************************/
 
-#include <base_local_planner/footprint_helper.h>
+#include <san_trajectory_planner/footprint_helper.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 FootprintHelper::FootprintHelper() {
   // TODO Auto-generated constructor stub
@@ -191,7 +191,7 @@ std::vector<base_local_planner::Position2DInt> FootprintHelper::getFootprintCell
   if (footprint_spec.size() <= 1) {
     unsigned int mx, my;
     if (costmap.worldToMap(x_i, y_i, mx, my)) {
-      Position2DInt center;
+      base_local_planner::Position2DInt center;
       center.x = mx;
       center.y = my;
       footprint_cells.push_back(center);

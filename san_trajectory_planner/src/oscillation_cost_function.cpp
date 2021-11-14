@@ -35,11 +35,11 @@
  * Author: TKruse
  *********************************************************************/
 
-#include <base_local_planner/oscillation_cost_function.h>
+#include <san_trajectory_planner/oscillation_cost_function.h>
 
 #include <cmath>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 OscillationCostFunction::OscillationCostFunction() {
 }
@@ -53,7 +53,7 @@ void OscillationCostFunction::setOscillationResetDist(double dist, double angle)
   oscillation_reset_angle_ = angle;
 }
 
-void OscillationCostFunction::updateOscillationFlags(Eigen::Vector3f pos, base_local_planner::Trajectory* traj, double min_vel_trans) {
+void OscillationCostFunction::updateOscillationFlags(Eigen::Vector3f pos, Trajectory* traj, double min_vel_trans) {
   if (traj->cost_ >= 0) {
     if (setOscillationFlags(traj, min_vel_trans)) {
       prev_stationary_pos_ = pos;
@@ -98,7 +98,7 @@ void OscillationCostFunction::resetOscillationFlags() {
   forward_neg_ = false;
 }
 
-bool OscillationCostFunction::setOscillationFlags(base_local_planner::Trajectory* t, double min_vel_trans) {
+bool OscillationCostFunction::setOscillationFlags(Trajectory* t, double min_vel_trans) {
   bool flag_set = false;
   //set oscillation flags for moving forward and backward
   if (t->xv_ < 0.0) {

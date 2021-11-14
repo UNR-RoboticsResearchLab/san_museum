@@ -9,15 +9,15 @@
 
 #include <vector>
 
-#include <base_local_planner/footprint_helper.h>
+#include <san_trajectory_planner/footprint_helper.h>
 
-#include <base_local_planner/map_grid.h>
-#include <base_local_planner/costmap_model.h>
+#include <san_trajectory_planner/map_grid.h>
+#include <san_trajectory_planner/costmap_model.h>
 #include <costmap_2d/costmap_2d.h>
 
 #include "wavefront_map_accessor.h"
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 
 class FootprintHelperTest : public testing::Test {

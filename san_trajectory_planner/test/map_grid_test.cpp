@@ -8,12 +8,12 @@
 
 #include <gtest/gtest.h>
 
-#include <base_local_planner/map_grid.h>
-#include <base_local_planner/map_cell.h>
+#include <san_trajectory_planner/map_grid.h>
+#include <san_trajectory_planner/map_cell.h>
 
 #include "wavefront_map_accessor.h"
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 TEST(MapGridTest, initNull){
   MapGrid map_grid;
@@ -124,7 +124,7 @@ TEST(MapGridTest, adjustPlan){
   global_plan_in.push_back(start);
   global_plan_in.push_back(end);
   mg.adjustPlanResolution(global_plan_in, global_plan_out, resolution);
-  
+
   EXPECT_EQ(1, global_plan_out[0].pose.position.x);
   EXPECT_EQ(1, global_plan_out[0].pose.position.y);
   EXPECT_EQ(5, global_plan_out.back().pose.position.x);

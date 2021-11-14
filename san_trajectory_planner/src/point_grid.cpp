@@ -35,7 +35,7 @@
 * Author: Eitan Marder-Eppstein
 *********************************************************************/
 
-#include <base_local_planner/point_grid.h>
+#include <san_trajectory_planner/point_grid.h>
 #include <ros/console.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -48,7 +48,7 @@
 using namespace std;
 using namespace costmap_2d;
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 PointGrid::PointGrid(double size_x, double size_y, double resolution, geometry_msgs::Point origin, double max_z, double obstacle_range, double min_seperation) :
   resolution_(resolution), origin_(origin), max_z_(max_z), sq_obstacle_range_(obstacle_range * obstacle_range), sq_min_separation_(min_seperation * min_seperation)
@@ -253,7 +253,7 @@ PointGrid::PointGrid(double size_x, double size_y, double resolution, geometry_m
     geometry_msgs::Point32 check_point;
     double sq_dist = DBL_MAX;
     double neighbor_sq_dist = DBL_MAX;
-    
+
     //left
     if(gx > 0){
       check_point.x = lower_left.x;
@@ -436,7 +436,7 @@ PointGrid::PointGrid(double size_x, double size_y, double resolution, geometry_m
       if(vector_angle < 0)
         vector_angle = 2 * M_PI + vector_angle;
 
-      double total_rads = laser_scan.angle_max - laser_scan.angle_min; 
+      double total_rads = laser_scan.angle_max - laser_scan.angle_min;
 
       //if this point lies outside of the scan field of view... it is not in the scan
       if(vector_angle < 0 || vector_angle >= total_rads)

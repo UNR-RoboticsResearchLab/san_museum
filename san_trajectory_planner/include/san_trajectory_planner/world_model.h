@@ -41,9 +41,9 @@
 #include <costmap_2d/observation.h>
 #include <costmap_2d/footprint.h>
 #include <geometry_msgs/Point.h>
-#include <base_local_planner/planar_laser_scan.h>
+#include <san_trajectory_planner/planar_laser_scan.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
   /**
    * @class WorldModel
    * @brief An interface the trajectory controller uses to interact with the

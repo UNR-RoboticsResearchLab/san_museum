@@ -12,10 +12,10 @@
 
 #include <Eigen/Core>
 
-#include <base_local_planner/local_planner_util.h>
-#include <base_local_planner/odometry_helper_ros.h>
+#include <san_trajectory_planner/local_planner_util.h>
+#include <san_trajectory_planner/odometry_helper_ros.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 class LatchedStopRotateController {
 public:
@@ -63,7 +63,7 @@ public:
       geometry_msgs::Twist& cmd_vel,
       Eigen::Vector3f acc_lim,
       double sim_period,
-      base_local_planner::LocalPlannerLimits& limits,
+      LocalPlannerLimits& limits,
       boost::function<bool (Eigen::Vector3f pos,
                             Eigen::Vector3f vel,
                             Eigen::Vector3f vel_samples)> obstacle_check);

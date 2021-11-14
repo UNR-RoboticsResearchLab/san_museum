@@ -41,12 +41,12 @@
 #include <cfloat>
 #include <geometry_msgs/Point.h>
 #include <costmap_2d/observation.h>
-#include <base_local_planner/world_model.h>
+#include <san_trajectory_planner/world_model.h>
 
 //voxel grid stuff
 #include <voxel_grid/voxel_grid.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
   /**
    * @class VoxelGridModel
    * @brief A class that implements the WorldModel interface to provide grid
@@ -91,7 +91,7 @@ namespace base_local_planner {
       /**
        * @brief  The costmap already keeps track of world observations, so for this world model this method does nothing
        * @param footprint The footprint of the robot in its current location
-       * @param observations The observations from various sensors 
+       * @param observations The observations from various sensors
        * @param laser_scan The scans used to clear freespace
        */
       void updateWorld(const std::vector<geometry_msgs::Point>& footprint,
@@ -116,8 +116,8 @@ namespace base_local_planner {
 
       /**
        * @brief  Checks the cost of a point in the costmap
-       * @param x The x position of the point in cell coordinates 
-       * @param y The y position of the point in cell coordinates 
+       * @param x The x position of the point in cell coordinates
+       * @param y The y position of the point in cell coordinates
        * @return A positive cost for a legal point... negative otherwise
        */
       double pointCost(int x, int y);

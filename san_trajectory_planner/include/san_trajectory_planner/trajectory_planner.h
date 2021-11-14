@@ -43,10 +43,10 @@
 //for obstacle data access
 #include <costmap_2d/costmap_2d.h>
 #include <costmap_2d/cost_values.h>
-#include <base_local_planner/footprint_helper.h>
+#include <san_trajectory_planner/footprint_helper.h>
 
-#include <base_local_planner/world_model.h>
-#include <base_local_planner/trajectory.h>
+#include <san_trajectory_planner/world_model.h>
+#include <san_trajectory_planner/trajectory.h>
 #include <base_local_planner/Position2DInt.h>
 #include <base_local_planner/BaseLocalPlannerConfig.h>
 
@@ -61,8 +61,8 @@
 #include <tf/transform_datatypes.h>
 
 //for creating a local cost grid
-#include <base_local_planner/map_cell.h>
-#include <base_local_planner/map_grid.h>
+#include <san_trajectory_planner/map_cell.h>
+#include <san_trajectory_planner/map_grid.h>
 
 #include <san_trajectory_planner/PaCcET.h>
 
@@ -111,7 +111,7 @@ namespace san_trajectory_planner {
        * @param y_vels A vector of the y velocities the controller will explore
        * @param angular_sim_granularity The distance between simulation points for angular velocity should be small enough that the robot doesn't hit things
        */
-      TrajectoryPlanner(base_local_planner::WorldModel& world_model,
+      TrajectoryPlanner(WorldModel& world_model,
           const costmap_2d::Costmap2D& costmap,
           std::vector<geometry_msgs::Point> footprint_spec,
           double acc_lim_x = 1.0, double acc_lim_y = 1.0, double acc_lim_theta = 1.0,
@@ -148,7 +148,7 @@ namespace san_trajectory_planner {
        * @param drive_velocities Will be set to velocities to send to the robot base
        * @return The selected path or trajectory
        */
-      base_local_planner::Trajectory findBestPath(const geometry_msgs::PoseStamped& global_pose,
+      Trajectory findBestPath(const geometry_msgs::PoseStamped& global_pose,
                               geometry_msgs::PoseStamped& global_vel, geometry_msgs::PoseStamped& drive_velocities);
 
       /**
@@ -226,28 +226,28 @@ namespace san_trajectory_planner {
 
 
       //Calculates the fintess value for the inter personal distance objective
-      vector<double> Calculate_Interpersonal_Distance_Fitness(base_local_planner::Trajectory& p_traj);
+      vector<double> Calculate_Interpersonal_Distance_Fitness(Trajectory& p_traj);
 
       //Calculates radius fitness
-      double calculateRadiusFitness(base_local_planner::Trajectory& p_traj);
+      double calculateRadiusFitness(Trajectory& p_traj);
 
       //Calculate intent fitness
-      double calculateIntentFitness(base_local_planner::Trajectory& p_traj);
+      double calculateIntentFitness(Trajectory& p_traj);
 
       //Stores the trajectory if it is a legal movement
-      void Store_trajectory(std::vector<base_local_planner::Trajectory> *pac_traj, base_local_planner::Trajectory& traj);
+      void Store_trajectory(std::vector<Trajectory> *pac_traj, Trajectory& traj);
 
       //Gets PaCcET fitness for a trajectory
-      void PaCcET_Fitness(PaCcET *pT, int i, std::vector<base_local_planner::Trajectory> *pac_traj);
+      void PaCcET_Fitness(PaCcET *pT, int i, std::vector<Trajectory> *pac_traj);
 
       //Gets the PaCcET fitness for each ptrajectory
-      void Get_PaCcET_Fitness(PaCcET *pT, std::vector<base_local_planner::Trajectory> *pac_traj);
+      void Get_PaCcET_Fitness(PaCcET *pT, std::vector<Trajectory> *pac_traj);
 
       //Checks to see where in the current population of trajectories the passed in trajectory should be placed based on its PaCcET fitness
       struct Less_Than_Policy_Fitness;
 
       //Sorts the population of trajectories based on their PaCcET fitness from lowest to highest by passing in one trajectoriy at a time to the sort function
-      void Sort_Policies_By_Fitness(std::vector<base_local_planner::Trajectory> *pac_traj);
+      void Sort_Policies_By_Fitness(std::vector<Trajectory> *pac_traj);
 
   		/************************* SAN *****************/
 
@@ -269,7 +269,7 @@ namespace san_trajectory_planner {
        * @param acc_theta The theta acceleration limit of the robot
        * @return
        */
-      base_local_planner::Trajectory createTrajectories(double x, double y, double theta, double vx, double vy, double vtheta,
+      Trajectory createTrajectories(double x, double y, double theta, double vx, double vy, double vtheta,
           double acc_x, double acc_y, double acc_theta);
 
       /**
@@ -291,7 +291,7 @@ namespace san_trajectory_planner {
        */
       void generateTrajectory(double x, double y, double theta, double vx, double vy,
           double vtheta, double vx_samp, double vy_samp, double vtheta_samp, double acc_x, double acc_y,
-          double acc_theta, double impossible_cost, base_local_planner::Trajectory& traj);
+          double acc_theta, double impossible_cost, Trajectory& traj);
 
       /**
        * @brief  Checks the legality of the robot footprint at a position and orientation using the world model
@@ -302,12 +302,12 @@ namespace san_trajectory_planner {
        */
       double footprintCost(double x_i, double y_i, double theta_i);
 
-      base_local_planner::FootprintHelper footprint_helper_;
+      FootprintHelper footprint_helper_;
 
-      base_local_planner::MapGrid path_map_; ///< @brief The local map grid where we propagate path distance
-      base_local_planner::MapGrid goal_map_; ///< @brief The local map grid where we propagate goal distance
+      MapGrid path_map_; ///< @brief The local map grid where we propagate path distance
+      MapGrid goal_map_; ///< @brief The local map grid where we propagate goal distance
       const costmap_2d::Costmap2D& costmap_; ///< @brief Provides access to cost map information
-      base_local_planner::WorldModel& world_model_; ///< @brief The world model that the controller uses for collision detection
+      WorldModel& world_model_; ///< @brief The world model that the controller uses for collision detection
 
       std::vector<geometry_msgs::Point> footprint_spec_; ///< @brief The footprint specification of the robot
 
@@ -340,7 +340,7 @@ namespace san_trajectory_planner {
       double prev_x_, prev_y_; ///< @brief Used to calculate the distance the robot has traveled before reseting oscillation booleans
       double escape_x_, escape_y_, escape_theta_; ///< @brief Used to calculate the distance the robot has traveled before reseting escape booleans
 
-      base_local_planner::Trajectory traj_one, traj_two; ///< @brief Used for scoring trajectories
+      Trajectory traj_one, traj_two; ///< @brief Used for scoring trajectories
 
       double heading_lookahead_; ///< @brief How far the robot should look ahead of itself when differentiating between different rotational velocities
       double oscillation_reset_dist_; ///< @brief The distance the robot must travel before it can explore rotational velocities that were unsuccessful in the past

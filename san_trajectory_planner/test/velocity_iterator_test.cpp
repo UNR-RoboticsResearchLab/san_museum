@@ -37,10 +37,10 @@
 
 #include <gtest/gtest.h>
 
-#include <base_local_planner/velocity_iterator.h>
+#include <san_trajectory_planner/velocity_iterator.h>
 
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 TEST(VelocityIteratorTest, testsingle) {
   double result[5];

@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2008, Willow Garage, Inc.
+ *  Copyright (c) 2017, Open Source Robotics Foundation, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,61 +32,33 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *
- * Author: TKruse
+ * Author: Morgan Quigley
  *********************************************************************/
 
-#ifndef ODOMETRY_HELPER_ROS2_H_
-#define ODOMETRY_HELPER_ROS2_H_
+#ifndef TWIRLING_COST_FUNCTION_H
+#define TWIRLING_COST_FUNCTION_H
 
-#include <nav_msgs/Odometry.h>
-#include <ros/ros.h>
-#include <boost/thread.hpp>
-#include <geometry_msgs/PoseStamped.h>
+#include <san_trajectory_planner/trajectory_cost_function.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
-class OdometryHelperRos {
+/**
+ * This class provides a cost based on how much a robot "twirls" on its
+ * way to the goal. With differential-drive robots, there isn't a choice,
+ * but with holonomic or near-holonomic robots, sometimes a robot spins
+ * more than you'd like on its way to a goal. This class provides a way
+ * to assign a penalty purely to rotational velocities.
+ */
+class TwirlingCostFunction: public TrajectoryCostFunction {
 public:
 
-  /** @brief Constructor.
-   * @param odom_topic The topic on which to subscribe to Odometry
-   *        messages.  If the empty string is given (the default), no
-   *        subscription is done. */
-  OdometryHelperRos(std::string odom_topic = "");
-  ~OdometryHelperRos() {}
+  TwirlingCostFunction() {}
+  ~TwirlingCostFunction() {}
 
-  /**
-   * @brief  Callback for receiving odometry data
-   * @param msg An Odometry message
-   */
-  void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
+  double scoreTrajectory(Trajectory &traj);
 
-  void getOdom(nav_msgs::Odometry& base_odom);
-
-  void getRobotVel(geometry_msgs::PoseStamped& robot_vel);
-
-  /** @brief Set the odometry topic.  This overrides what was set in the constructor, if anything.
-   *
-   * This unsubscribes from the old topic (if any) and subscribes to the new one (if any).
-   *
-   * If odom_topic is the empty string, this just unsubscribes from the previous topic. */
-  void setOdomTopic(std::string odom_topic);
-
-  /** @brief Return the current odometry topic. */
-  std::string getOdomTopic() const { return odom_topic_; }
-
-private:
-  //odom topic
-  std::string odom_topic_;
-
-  // we listen on odometry on the odom topic
-  ros::Subscriber odom_sub_;
-  nav_msgs::Odometry base_odom_;
-  boost::mutex odom_mutex_;
-  // global tf frame id
-  std::string frame_id_; ///< The frame_id associated this data
+  bool prepare() {return true;};
 };
 
 } /* namespace base_local_planner */
-#define CHUNKY 1
-#endif /* ODOMETRY_HELPER_ROS2_H_ */
+#endif /* TWIRLING_COST_FUNCTION_H_ */

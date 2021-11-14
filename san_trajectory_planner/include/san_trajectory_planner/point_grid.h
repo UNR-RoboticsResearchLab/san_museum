@@ -41,11 +41,11 @@
 #include <cfloat>
 #include <geometry_msgs/Point.h>
 #include <costmap_2d/observation.h>
-#include <base_local_planner/world_model.h>
+#include <san_trajectory_planner/world_model.h>
 
 #include <sensor_msgs/PointCloud2.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
   /**
    * @class PointGrid
    * @brief A class that implements the WorldModel interface to provide
@@ -66,7 +66,7 @@ namespace base_local_planner {
        * @param  obstacle_range The maximum distance for obstacles to be added to the grid
        * @param  min_separation The minimum distance between points in the grid
        */
-      PointGrid(double width, double height, double resolution, geometry_msgs::Point origin, 
+      PointGrid(double width, double height, double resolution, geometry_msgs::Point origin,
           double max_z, double obstacle_range, double min_separation);
 
       /**
@@ -76,7 +76,7 @@ namespace base_local_planner {
 
       /**
        * @brief  Returns the points that lie within the cells contained in the specified range. Some of these points may be outside the range itself.
-       * @param  lower_left The lower left corner of the range search 
+       * @param  lower_left The lower left corner of the range search
        * @param  upper_right The upper right corner of the range search
        * @param points A vector of pointers to lists of the relevant points
        */
@@ -98,15 +98,15 @@ namespace base_local_planner {
       /**
        * @brief  Inserts observations from sensors into the point grid
        * @param footprint The footprint of the robot in its current location
-       * @param observations The observations from various sensors 
+       * @param observations The observations from various sensors
        * @param laser_scans The laser scans used to clear freespace (the point grid only uses the first scan which is assumed to be the base laser)
        */
-      void updateWorld(const std::vector<geometry_msgs::Point>& footprint, 
+      void updateWorld(const std::vector<geometry_msgs::Point>& footprint,
           const std::vector<costmap_2d::Observation>& observations, const std::vector<PlanarLaserScan>& laser_scans);
 
       /**
        * @brief  Convert from world coordinates to grid coordinates
-       * @param  pt A point in world space 
+       * @param  pt A point in world space
        * @param  gx The x coordinate of the corresponding grid cell to be set by the function
        * @param  gy The y coordinate of the corresponding grid cell to be set by the function
        * @return True if the conversion was successful, false otherwise
@@ -131,8 +131,8 @@ namespace base_local_planner {
 
       /**
        * @brief  Get the bounds in world coordinates of a cell in the point grid, assumes a legal cell when called
-       * @param  gx The x coordinate of the grid cell 
-       * @param  gy The y coordinate of the grid cell 
+       * @param  gx The x coordinate of the grid cell
+       * @param  gy The y coordinate of the grid cell
        * @param  lower_left The lower left bounds of the cell in world coordinates to be filled in
        * @param  upper_right The upper right bounds of the cell in world coordinates to be filled in
        */
@@ -147,8 +147,8 @@ namespace base_local_planner {
 
       /**
        * @brief  Compute the squared distance between two points
-       * @param pt1 The first point 
-       * @param pt2 The second point 
+       * @param pt1 The first point
+       * @param pt2 The second point
        * @return The squared distance between the two points
        */
       inline double sq_distance(const geometry_msgs::Point32& pt1, const geometry_msgs::Point32& pt2){
@@ -157,7 +157,7 @@ namespace base_local_planner {
 
       /**
        * @brief  Convert from world coordinates to grid coordinates
-       * @param  pt A point in world space 
+       * @param  pt A point in world space
        * @param  gx The x coordinate of the corresponding grid cell to be set by the function
        * @param  gy The y coordinate of the corresponding grid cell to be set by the function
        * @return True if the conversion was successful, false otherwise
@@ -182,8 +182,8 @@ namespace base_local_planner {
 
       /**
        * @brief  Converts cell coordinates to an index value that can be used to look up the correct grid cell
-       * @param gx The x coordinate of the cell 
-       * @param gy The y coordinate of the cell 
+       * @param gx The x coordinate of the cell
+       * @param gy The y coordinate of the cell
        * @return The index of the cell in the stored cell list
        */
       inline unsigned int gridIndex(unsigned int gx, unsigned int gy) const {
@@ -201,10 +201,10 @@ namespace base_local_planner {
 
       /**
        * @brief  Check the orientation of a pt c with respect to the vector a->b
-       * @param a The start point of the vector 
-       * @param b The end point of the vector 
+       * @param a The start point of the vector
+       * @param b The end point of the vector
        * @param c The point to compute orientation for
-       * @return orient(a, b, c) < 0 ----> Right, orient(a, b, c) > 0 ----> Left 
+       * @return orient(a, b, c) < 0 ----> Right, orient(a, b, c) > 0 ----> Left
        */
       inline double orient(const geometry_msgs::Point& a, const geometry_msgs::Point& b, const geometry_msgs::Point32& c){
         double acx = a.x - c.x;
@@ -216,10 +216,10 @@ namespace base_local_planner {
 
       /**
        * @brief  Check the orientation of a pt c with respect to the vector a->b
-       * @param a The start point of the vector 
-       * @param b The end point of the vector 
+       * @param a The start point of the vector
+       * @param b The end point of the vector
        * @param c The point to compute orientation for
-       * @return orient(a, b, c) < 0 ----> Right, orient(a, b, c) > 0 ----> Left 
+       * @return orient(a, b, c) < 0 ----> Right, orient(a, b, c) > 0 ----> Left
        */
       template<typename T>
       inline double orient(const T& a, const T& b, const T& c){
@@ -232,10 +232,10 @@ namespace base_local_planner {
 
       /**
        * @brief  Check if two line segmenst intersect
-       * @param v1 The first point of the first segment 
-       * @param v2 The second point of the first segment 
-       * @param u1 The first point of the second segment 
-       * @param u2 The second point of the second segment 
+       * @param v1 The first point of the first segment
+       * @param v2 The second point of the first segment
+       * @param u1 The first point of the second segment
+       * @param u2 The second point of the second segment
        * @return True if the segments intersect, false otherwise
        */
       inline bool segIntersect(const geometry_msgs::Point32& v1, const geometry_msgs::Point32& v2,
@@ -245,19 +245,19 @@ namespace base_local_planner {
 
       /**
        * @brief  Find the intersection point of two lines
-       * @param v1 The first point of the first segment 
-       * @param v2 The second point of the first segment 
-       * @param u1 The first point of the second segment 
-       * @param u2 The second point of the second segment 
+       * @param v1 The first point of the first segment
+       * @param v2 The second point of the first segment
+       * @param u1 The first point of the second segment
+       * @param u2 The second point of the second segment
        * @param result The point to be filled in
        */
-      void intersectionPoint(const geometry_msgs::Point& v1, const geometry_msgs::Point& v2, 
-          const geometry_msgs::Point& u1, const geometry_msgs::Point& u2, 
+      void intersectionPoint(const geometry_msgs::Point& v1, const geometry_msgs::Point& v2,
+          const geometry_msgs::Point& u1, const geometry_msgs::Point& u2,
           geometry_msgs::Point& result);
 
       /**
        * @brief  Check if a point is in a polygon
-       * @param pt The point to be checked 
+       * @param pt The point to be checked
        * @param poly The polygon to check against
        * @return True if the point is in the polygon, false otherwise
        */
@@ -265,20 +265,20 @@ namespace base_local_planner {
 
       /**
        * @brief  Insert a point into the point grid
-       * @param pt The point to be inserted 
+       * @param pt The point to be inserted
        */
       void insert(const geometry_msgs::Point32& pt);
 
       /**
        * @brief  Find the distance between a point and its nearest neighbor in the grid
-       * @param pt The point used for comparison 
+       * @param pt The point used for comparison
        * @return  The distance between the point passed in and its nearest neighbor in the point grid
        */
       double nearestNeighborDistance(const geometry_msgs::Point32& pt);
 
       /**
        * @brief  Find the distance between a point and its nearest neighbor in a cell
-       * @param pt The point used for comparison 
+       * @param pt The point used for comparison
        * @param gx The x coordinate of the cell
        * @param gy The y coordinate of the cell
        * @return  The distance between the point passed in and its nearest neighbor in the cell
@@ -287,7 +287,7 @@ namespace base_local_planner {
 
       /**
        * @brief  Removes points from the grid that lie within the polygon
-       * @param poly A specification of the polygon to clear from the grid 
+       * @param poly A specification of the polygon to clear from the grid
        */
       void removePointsInPolygon(const std::vector<geometry_msgs::Point> poly);
 

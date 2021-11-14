@@ -34,14 +34,14 @@
 *
 * Author: Eitan Marder-Eppstein
 *********************************************************************/
-#include <base_local_planner/line_iterator.h>
-#include <base_local_planner/costmap_model.h>
+#include <san_trajectory_planner/line_iterator.h>
+#include <san_trajectory_planner/costmap_model.h>
 #include <costmap_2d/cost_values.h>
 
 using namespace std;
 using namespace costmap_2d;
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
   CostmapModel::CostmapModel(const Costmap2D& ma) : costmap_(ma) {}
 
   double CostmapModel::footprintCost(const geometry_msgs::Point& position, const std::vector<geometry_msgs::Point>& footprint,

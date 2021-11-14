@@ -35,9 +35,9 @@
  * Author: TKruse
  *********************************************************************/
 
-#include <base_local_planner/map_grid_cost_function.h>
+#include <san_trajectory_planner/map_grid_cost_function.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 MapGridCostFunction::MapGridCostFunction(costmap_2d::Costmap2D* costmap,
     double xshift,

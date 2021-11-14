@@ -5,11 +5,11 @@
  *      Author: tkruse
  */
 
-#include <base_local_planner/prefer_forward_cost_function.h>
+#include <san_trajectory_planner/prefer_forward_cost_function.h>
 
 #include <math.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 
 double PreferForwardCostFunction::scoreTrajectory(Trajectory &traj) {

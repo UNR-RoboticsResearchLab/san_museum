@@ -1,4 +1,5 @@
 /*********************************************************************
+ *
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2008, Willow Garage, Inc.
@@ -14,7 +15,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of the Willow Garage nor the names of its
+ *   * Neither the name of Willow Garage, Inc. nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -30,38 +31,59 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: TKruse
  *********************************************************************/
-#ifndef TRAJECTORY_ROLLOUT_MAP_CELL_H_
-#define TRAJECTORY_ROLLOUT_MAP_CELL_H_
 
-#include <base_local_planner/trajectory_inc.h>
+#ifndef OSCILLATION_COST_FUNCTION_H_
+#define OSCILLATION_COST_FUNCTION_H_
 
-namespace base_local_planner {
+#include <san_trajectory_planner/trajectory_cost_function.h>
+#include <Eigen/Core>
+
+namespace san_trajectory_planner {
+
+class OscillationCostFunction: public TrajectoryCostFunction {
+public:
+  OscillationCostFunction();
+  virtual ~OscillationCostFunction();
+
+  double scoreTrajectory(Trajectory &traj);
+
+  bool prepare() {return true;};
+
   /**
-   * @class MapCell
-   * @brief Stores path distance and goal distance information used for scoring trajectories
+   * @brief  Reset the oscillation flags for the local planner
    */
-  class MapCell{
-    public:
-      /**
-       * @brief  Default constructor
-       */
-      MapCell();
+  void resetOscillationFlags();
 
-      /**
-       * @brief  Copy constructor
-       * @param mc The MapCell to be copied
-       */
-      MapCell(const MapCell& mc);
 
-      unsigned int cx, cy; ///< @brief Cell index in the grid map
+  void updateOscillationFlags(Eigen::Vector3f pos, Trajectory* traj, double min_vel_trans);
 
-      double target_dist; ///< @brief Distance to planner's path
+  void setOscillationResetDist(double dist, double angle);
 
-      bool target_mark; ///< @brief Marks for computing path/goal distances
+private:
 
-      bool within_robot; ///< @brief Mark for cells within the robot footprint
-  };
+  void resetOscillationFlagsIfPossible(const Eigen::Vector3f& pos, const Eigen::Vector3f& prev);
+
+  /**
+   * @brief  Given a trajectory that's selected, set flags if needed to
+   * prevent the robot from oscillating
+   * @param  t The selected trajectory
+   * @return True if a flag was set, false otherwise
+   */
+  bool setOscillationFlags(Trajectory* t, double min_vel_trans);
+
+  // flags
+  bool strafe_pos_only_, strafe_neg_only_, strafing_pos_, strafing_neg_;
+  bool rot_pos_only_, rot_neg_only_, rotating_pos_, rotating_neg_;
+  bool forward_pos_only_, forward_neg_only_, forward_pos_, forward_neg_;
+
+  // param
+  double oscillation_reset_dist_, oscillation_reset_angle_;
+
+  Eigen::Vector3f prev_stationary_pos_;
 };
 
-#endif
+} /* namespace base_local_planner */
+#endif /* OSCILLATION_COST_FUNCTION_H_ */

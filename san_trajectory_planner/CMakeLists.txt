@@ -22,6 +22,7 @@ find_package(catkin REQUIRED
             tf2_geometry_msgs
             tf2_ros
             voxel_grid
+            pcl_ros
         )
 
 find_package(Boost REQUIRED

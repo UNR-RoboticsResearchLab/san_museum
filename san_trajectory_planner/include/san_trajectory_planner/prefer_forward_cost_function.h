@@ -38,11 +38,11 @@
 #ifndef PREFER_FORWARD_COST_FUNCTION_H_
 #define PREFER_FORWARD_COST_FUNCTION_H_
 
-#include <base_local_planner/trajectory_cost_function.h>
+#include <san_trajectory_planner/trajectory_cost_function.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
-class PreferForwardCostFunction: public base_local_planner::TrajectoryCostFunction {
+class PreferForwardCostFunction: public TrajectoryCostFunction {
 public:
 
   PreferForwardCostFunction(double penalty) : penalty_(penalty) {}

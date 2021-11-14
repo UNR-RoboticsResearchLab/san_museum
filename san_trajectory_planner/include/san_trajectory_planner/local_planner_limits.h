@@ -38,7 +38,7 @@
 
 #include <Eigen/Core>
 
-namespace base_local_planner
+namespace san_trajectory_planner
 {
 class LocalPlannerLimits
 {

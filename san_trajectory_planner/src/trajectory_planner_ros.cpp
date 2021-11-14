@@ -35,7 +35,7 @@
 * Author: Eitan Marder-Eppstein
 *********************************************************************/
 
-#include <base_local_planner/trajectory_planner_ros.h>
+#include <san_trajectory_planner/trajectory_planner_ros.h>
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -50,7 +50,7 @@
 
 #include <pluginlib/class_list_macros.h>
 
-#include <base_local_planner/goal_functions.h>
+#include <san_trajectory_planner/goal_functions.h>
 #include <nav_msgs/Path.h>
 
 #include <nav_core/parameter_magic.h>
@@ -245,7 +245,7 @@ namespace san_trajectory_planner {
       private_nh.param("point_grid/grid_resolution", grid_resolution, 0.2);
 
       ROS_ASSERT_MSG(world_model_type == "costmap", "At this time, only costmap world models are supported by this controller");
-      world_model_ = new base_local_planner::CostmapModel(*costmap_);
+      world_model_ = new CostmapModel(*costmap_);
       std::vector<double> y_vels = loadYVels(private_nh);
 
       footprint_spec_ = costmap_ros_->getRobotFootprint();
@@ -406,14 +406,14 @@ namespace san_trajectory_planner {
 
     std::vector<geometry_msgs::PoseStamped> transformed_plan;
     //get the global plan in our frame
-    if (!base_local_planner::transformGlobalPlan(*tf_, global_plan_, global_pose, *costmap_, global_frame_, transformed_plan)) {
+    if (!transformGlobalPlan(*tf_, global_plan_, global_pose, *costmap_, global_frame_, transformed_plan)) {
       ROS_WARN("Could not transform the global plan to the frame of the controller");
       return false;
     }
 
     //now we'll prune the plan based on the position of the robot
     if(prune_plan_)
-      base_local_planner::prunePlan(global_pose, transformed_plan, global_plan_);
+      prunePlan(global_pose, transformed_plan, global_plan_);
 
     geometry_msgs::PoseStamped drive_cmds;
     drive_cmds.header.frame_id = robot_base_frame_;
@@ -441,7 +441,7 @@ namespace san_trajectory_planner {
     double goal_th = yaw;
 
     //check to see if we've reached the goal position
-    if (xy_tolerance_latch_ || (base_local_planner::getGoalPositionDistance(global_pose, goal_x, goal_y) <= xy_goal_tolerance_)) {
+    if (xy_tolerance_latch_ || (getGoalPositionDistance(global_pose, goal_x, goal_y) <= xy_goal_tolerance_)) {
 
       //if the user wants to latch goal tolerance, if we ever reach the goal location, we'll
       //just rotate in place
@@ -449,7 +449,7 @@ namespace san_trajectory_planner {
         xy_tolerance_latch_ = true;
       }
 
-      double angle = base_local_planner::getGoalOrientationAngleDifference(global_pose, goal_th);
+      double angle = getGoalOrientationAngleDifference(global_pose, goal_th);
       //check to see if the goal orientation has been reached
       if (fabs(angle) <= yaw_goal_tolerance_) {
         //set the velocity command to zero
@@ -463,7 +463,7 @@ namespace san_trajectory_planner {
         //we need to call the next two lines to make sure that the trajectory
         //planner updates its path distance and goal distance grids
         tc_->updatePlan(transformed_plan);
-        base_local_planner::Trajectory path = tc_->findBestPath(global_pose, robot_vel, drive_cmds);
+        Trajectory path = tc_->findBestPath(global_pose, robot_vel, drive_cmds);
         map_viz_.publishCostCloud(costmap_);
 
         //copy over the odometry information
@@ -471,7 +471,7 @@ namespace san_trajectory_planner {
         odom_helper_.getOdom(base_odom);
 
         //if we're not stopped yet... we want to stop... taking into account the acceleration limits of the robot
-        if ( ! rotating_to_goal_ && !base_local_planner::stopped(base_odom, rot_stopped_velocity_, trans_stopped_velocity_)) {
+        if ( ! rotating_to_goal_ && !stopped(base_odom, rot_stopped_velocity_, trans_stopped_velocity_)) {
           if ( ! stopWithAccLimits(global_pose, robot_vel, cmd_vel)) {
             return false;
           }
@@ -487,8 +487,8 @@ namespace san_trajectory_planner {
       }
 
       //publish an empty plan because we've reached our goal position
-      base_local_planner::publishPlan(transformed_plan, g_plan_pub_);
-      base_local_planner::publishPlan(local_plan, l_plan_pub_);
+      publishPlan(transformed_plan, g_plan_pub_);
+      publishPlan(local_plan, l_plan_pub_);
 
       //we don't actually want to run the controller when we're just rotating to goal
       return true;
@@ -497,7 +497,7 @@ namespace san_trajectory_planner {
     tc_->updatePlan(transformed_plan);
 
     //compute what trajectory to drive along
-    base_local_planner::Trajectory path = tc_->findBestPath(global_pose, robot_vel, drive_cmds);
+    Trajectory path = tc_->findBestPath(global_pose, robot_vel, drive_cmds);
 
     map_viz_.publishCostCloud(costmap_);
     /* For timing uncomment
@@ -518,8 +518,8 @@ namespace san_trajectory_planner {
       ROS_DEBUG_NAMED("trajectory_planner_ros",
           "The rollout planner failed to find a valid plan. This means that the footprint of the robot was in collision for all simulated trajectories.");
       local_plan.clear();
-      base_local_planner::publishPlan(transformed_plan, g_plan_pub_);
-      base_local_planner::publishPlan(local_plan, l_plan_pub_);
+      publishPlan(transformed_plan, g_plan_pub_);
+      publishPlan(local_plan, l_plan_pub_);
       return false;
     }
 
@@ -543,8 +543,8 @@ namespace san_trajectory_planner {
     }
 
     //publish information to the visualizer
-    base_local_planner::publishPlan(transformed_plan, g_plan_pub_);
-    base_local_planner::publishPlan(local_plan, l_plan_pub_);
+    publishPlan(transformed_plan, g_plan_pub_);
+    publishPlan(local_plan, l_plan_pub_);
     return true;
   }
 

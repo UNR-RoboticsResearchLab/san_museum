@@ -38,11 +38,11 @@
 #ifndef SIMPLE_TRAJECTORY_GENERATOR_H_
 #define SIMPLE_TRAJECTORY_GENERATOR_H_
 
-#include <base_local_planner/trajectory_sample_generator.h>
-#include <base_local_planner/local_planner_limits.h>
+#include <san_trajectory_planner/trajectory_sample_generator.h>
+#include <san_trajectory_planner/local_planner_limits.h>
 #include <Eigen/Core>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 /**
  * generates trajectories based on equi-distant discretisation of the degrees of freedom.
@@ -58,7 +58,7 @@ namespace base_local_planner {
  * trajectory rollout approach will sample max-x-velocities 0m/s up to 1m/s
  * trajectory rollout approach does so respecting the acceleration limit, so it gradually increases velocity
  */
-class SimpleTrajectoryGenerator: public base_local_planner::TrajectorySampleGenerator {
+class SimpleTrajectoryGenerator: public TrajectorySampleGenerator {
 public:
 
   SimpleTrajectoryGenerator() {
@@ -80,7 +80,7 @@ public:
       const Eigen::Vector3f& pos,
       const Eigen::Vector3f& vel,
       const Eigen::Vector3f& goal,
-      base_local_planner::LocalPlannerLimits* limits,
+      LocalPlannerLimits* limits,
       const Eigen::Vector3f& vsamples,
       std::vector<Eigen::Vector3f> additional_samples,
       bool discretize_by_time = false);
@@ -97,7 +97,7 @@ public:
       const Eigen::Vector3f& pos,
       const Eigen::Vector3f& vel,
       const Eigen::Vector3f& goal,
-      base_local_planner::LocalPlannerLimits* limits,
+      LocalPlannerLimits* limits,
       const Eigen::Vector3f& vsamples,
       bool discretize_by_time = false);
 
@@ -136,14 +136,14 @@ public:
         Eigen::Vector3f pos,
         Eigen::Vector3f vel,
         Eigen::Vector3f sample_target_vel,
-        base_local_planner::Trajectory& traj);
+        Trajectory& traj);
 
 protected:
 
   unsigned int next_sample_index_;
   // to store sample params of each sample between init and generation
   std::vector<Eigen::Vector3f> sample_params_;
-  base_local_planner::LocalPlannerLimits* limits_;
+  LocalPlannerLimits* limits_;
   Eigen::Vector3f pos_;
   Eigen::Vector3f vel_;
 

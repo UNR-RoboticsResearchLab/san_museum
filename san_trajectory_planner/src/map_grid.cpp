@@ -31,18 +31,18 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#include <base_local_planner/map_grid.h>
+#include <san_trajectory_planner/map_grid.h>
 #include <costmap_2d/cost_values.h>
 using namespace std;
 
-namespace base_local_planner{
+namespace san_trajectory_planner{
 
   MapGrid::MapGrid()
     : size_x_(0), size_y_(0)
   {
   }
 
-  MapGrid::MapGrid(unsigned int size_x, unsigned int size_y) 
+  MapGrid::MapGrid(unsigned int size_x, unsigned int size_y)
     : size_x_(size_x), size_y_(size_y)
   {
     commonInit();

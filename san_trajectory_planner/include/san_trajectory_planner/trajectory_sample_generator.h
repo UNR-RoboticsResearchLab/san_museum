@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2017, Open Source Robotics Foundation, Inc.
+ *  Copyright (c) 2008, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,33 +32,43 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *
- * Author: Morgan Quigley
+ * Author: TKruse
  *********************************************************************/
 
-#ifndef TWIRLING_COST_FUNCTION_H
-#define TWIRLING_COST_FUNCTION_H
+#ifndef TRAJECTORY_SAMPLE_GENERATOR_H_
+#define TRAJECTORY_SAMPLE_GENERATOR_H_
 
-#include <base_local_planner/trajectory_cost_function.h>
+#include <san_trajectory_planner/trajectory.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 /**
- * This class provides a cost based on how much a robot "twirls" on its
- * way to the goal. With differential-drive robots, there isn't a choice,
- * but with holonomic or near-holonomic robots, sometimes a robot spins
- * more than you'd like on its way to a goal. This class provides a way
- * to assign a penalty purely to rotational velocities.
+ * @class TrajectorySampleGenerator
+ * @brief Provides an interface for navigation trajectory generators
  */
-class TwirlingCostFunction: public base_local_planner::TrajectoryCostFunction {
+class TrajectorySampleGenerator {
 public:
 
-  TwirlingCostFunction() {}
-  ~TwirlingCostFunction() {}
+  /**
+   * Whether this generator can create more trajectories
+   */
+  virtual bool hasMoreTrajectories() = 0;
 
-  double scoreTrajectory(Trajectory &traj);
+  /**
+   * Whether this generator can create more trajectories
+   */
+  virtual bool nextTrajectory(Trajectory &traj) = 0;
 
-  bool prepare() {return true;};
+  /**
+   * @brief  Virtual destructor for the interface
+   */
+  virtual ~TrajectorySampleGenerator() {}
+
+protected:
+  TrajectorySampleGenerator() {}
+
 };
 
-} /* namespace base_local_planner */
-#endif /* TWIRLING_COST_FUNCTION_H_ */
+} // end namespace
+
+#endif /* TRAJECTORY_SAMPLE_GENERATOR_H_ */

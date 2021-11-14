@@ -31,7 +31,7 @@
 
 #include <stdlib.h>
 
-namespace base_local_planner
+namespace san_trajectory_planner
 {
 
 /** An iterator implementing Bresenham Ray-Tracing. */
@@ -90,7 +90,7 @@ public:
       numpixels_ = deltay_;         // There are more y-values than x-values
     }
   }
-    
+
   bool isValid() const
   {
     return curpixel_ <= numpixels_;
@@ -110,7 +110,7 @@ public:
 
     curpixel_++;
   }
-  
+
   int getX() const { return x_; }
   int getY() const { return y_; }
 

@@ -35,7 +35,7 @@
 * Author: Eitan Marder-Eppstein
 *********************************************************************/
 
-#include <base_local_planner/point_grid.h>
+#include <san_trajectory_planner/point_grid.h>
 #include <ros/console.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -76,7 +76,7 @@ void printPolygonPS(const std::vector<geometry_msgs::Point32>& poly, double line
 
 }
 
-using namespace base_local_planner;
+using namespace san_trajectory_planner;
 
 int main(int argc, char** argv){
   geometry_msgs::Point origin;

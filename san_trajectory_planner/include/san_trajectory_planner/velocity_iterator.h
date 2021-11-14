@@ -40,7 +40,7 @@
 #include <cmath>
 #include <vector>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
   /**
    * We use the class to get even sized samples between min and max, inluding zero if it is not included (and range goes from negative to positive

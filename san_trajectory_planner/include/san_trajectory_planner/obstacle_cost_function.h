@@ -35,53 +35,55 @@
  * Author: TKruse
  *********************************************************************/
 
-#ifndef FOOTPRINT_HELPER_H_
-#define FOOTPRINT_HELPER_H_
+#ifndef OBSTACLE_COST_FUNCTION_H_
+#define OBSTACLE_COST_FUNCTION_H_
 
-#include <vector>
+#include <san_trajectory_planner/trajectory_cost_function.h>
 
+#include <san_trajectory_planner/costmap_model.h>
 #include <costmap_2d/costmap_2d.h>
-#include <geometry_msgs/Point.h>
-#include <Eigen/Core>
-#include <base_local_planner/Position2DInt.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
-class FootprintHelper {
+/**
+ * class ObstacleCostFunction
+ * @brief Uses costmap 2d to assign negative costs if robot footprint
+ * is in obstacle on any point of the trajectory.
+ */
+class ObstacleCostFunction : public TrajectoryCostFunction {
+
 public:
-  FootprintHelper();
-  virtual ~FootprintHelper();
+  ObstacleCostFunction(costmap_2d::Costmap2D* costmap);
+  ~ObstacleCostFunction();
 
-  /**
-   * @brief  Used to get the cells that make up the footprint of the robot
-   * @param x_i The x position of the robot
-   * @param y_i The y position of the robot
-   * @param theta_i The orientation of the robot
-   * @param  fill If true: returns all cells in the footprint of the robot. If false: returns only the cells that make up the outline of the footprint.
-   * @return The cells that make up either the outline or entire footprint of the robot depending on fill
-   */
-  std::vector<base_local_planner::Position2DInt> getFootprintCells(
-      Eigen::Vector3f pos,
+  bool prepare();
+  double scoreTrajectory(Trajectory &traj);
+
+  void setSumScores(bool score_sums){ sum_scores_=score_sums; }
+
+  void setParams(double max_trans_vel, double max_scaling_factor, double scaling_speed);
+  void setFootprint(std::vector<geometry_msgs::Point> footprint_spec);
+
+  // helper functions, made static for easy unit testing
+  static double getScalingFactor(Trajectory &traj, double scaling_speed, double max_trans_vel, double max_scaling_factor);
+  static double footprintCost(
+      const double& x,
+      const double& y,
+      const double& th,
+      double scale,
       std::vector<geometry_msgs::Point> footprint_spec,
-      const costmap_2d::Costmap2D&,
-      bool fill);
+      costmap_2d::Costmap2D* costmap,
+      WorldModel* world_model);
 
-  /**
-   * @brief  Use Bresenham's algorithm to trace a line between two points in a grid
-   * @param  x0 The x coordinate of the first point
-   * @param  x1 The x coordinate of the second point
-   * @param  y0 The y coordinate of the first point
-   * @param  y1 The y coordinate of the second point
-   * @param  pts Will be filled with the cells that lie on the line in the grid
-   */
-  void getLineCells(int x0, int x1, int y0, int y1, std::vector<base_local_planner::Position2DInt>& pts);
-
-  /**
-   * @brief Fill the outline of a polygon, in this case the robot footprint, in a grid
-   * @param footprint The list of cells making up the footprint in the grid, will be modified to include all cells inside the footprint
-   */
-  void getFillCells(std::vector<base_local_planner::Position2DInt>& footprint);
+private:
+  costmap_2d::Costmap2D* costmap_;
+  std::vector<geometry_msgs::Point> footprint_spec_;
+  WorldModel* world_model_;
+  double max_trans_vel_;
+  bool sum_scores_;
+  //footprint scaling with velocity;
+  double max_scaling_factor_, scaling_speed_;
 };
 
 } /* namespace base_local_planner */
-#endif /* FOOTPRINT_HELPER_H_ */
+#endif /* OBSTACLE_COST_FUNCTION_H_ */

@@ -37,11 +37,11 @@
 #ifndef TRAJECTORY_ROLLOUT_COSTMAP_MODEL_
 #define TRAJECTORY_ROLLOUT_COSTMAP_MODEL_
 
-#include <base_local_planner/world_model.h>
+#include <san_trajectory_planner/world_model.h>
 // For obstacle data access
 #include <costmap_2d/costmap_2d.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
   /**
    * @class CostmapModel
    * @brief A class that implements the WorldModel interface to provide grid

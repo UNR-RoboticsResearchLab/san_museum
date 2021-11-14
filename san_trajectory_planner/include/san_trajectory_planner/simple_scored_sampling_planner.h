@@ -39,12 +39,12 @@
 #define SIMPLE_SCORED_SAMPLING_PLANNER_H_
 
 #include <vector>
-#include <base_local_planner/trajectory.h>
-#include <base_local_planner/trajectory_cost_function.h>
-#include <base_local_planner/trajectory_sample_generator.h>
-#include <base_local_planner/trajectory_search.h>
+#include <san_trajectory_planner/trajectory.h>
+#include <san_trajectory_planner/trajectory_cost_function.h>
+#include <san_trajectory_planner/trajectory_sample_generator.h>
+#include <san_trajectory_planner/trajectory_search.h>
 
-namespace base_local_planner {
+namespace san_trajectory_planner {
 
 /**
  * @class SimpleScoredSamplingPlanner
@@ -55,7 +55,7 @@ namespace base_local_planner {
  * the TrajectorySearch interface. More efficient search may well be
  * possible using search heuristics, parallel search, etc.
  */
-class SimpleScoredSamplingPlanner : public base_local_planner::TrajectorySearch {
+class SimpleScoredSamplingPlanner : public TrajectorySearch {
 public:
 
   ~SimpleScoredSamplingPlanner() {}
