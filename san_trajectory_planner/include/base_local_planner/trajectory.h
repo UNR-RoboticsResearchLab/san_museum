@@ -63,6 +63,20 @@ namespace base_local_planner {
 
       double time_delta_; ///< @brief The time gap between points
 
+      //For PaCcET
+      double occ_cost;
+      double path_dist;
+      double heading_diff;
+      double goal_dist;
+      std::vector<double> inter_dist;            //Actual distance from robot to human
+      std::vector<double> inter_dist_fitness;    //based on the exponential function
+      double d_center; //Distance from the center of the O formation
+      double radius_fitness; //Fitness based on the distance from the center of O formation
+      double d_intent;
+      double intent_fitness;
+      std::vector<double> objectives;
+      double paccet_fitness;
+
       /**
        * @brief  Get a point within the trajectory
        * @param index The index of the point to get

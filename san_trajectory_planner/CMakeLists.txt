@@ -144,7 +144,7 @@ install(TARGETS
        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
        )
 
-install(FILES blp_plugin.xml
+install(FILES san_plugin.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

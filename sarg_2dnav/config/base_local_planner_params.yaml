@@ -1,4 +1,4 @@
-TrajectoryPlannerROS:
+san_trajectory_planner/TrajectoryPlannerROS:
   acc_lim_x: 2.5
   acc_lix_y: 2.5
   acc_lim_theta: 3.2

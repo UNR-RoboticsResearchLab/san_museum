@@ -1,0 +1,19 @@
+Header header    
+string ObjectId   
+float32 distance  
+time t0		   	
+time t1
+float32 distancetravelled   
+float32 speed	 
+float32 xdistance  
+float32 ydistance
+---
+Header header    
+string ObjectId   
+float32 distance  
+time t0		   	
+time t1
+float32 distancetravelled   
+float32 speed	 
+float32 xdistance  
+float32 ydistance

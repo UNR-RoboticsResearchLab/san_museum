@@ -1,0 +1,13 @@
+<launch>
+  
+  <node name="laserLineDetection" pkg="hallway" type="laserLineDetection"/>
+  <node name="behavior" pkg="human_simulation" type="behavior" args="pass"/>
+  <!--<node name="tfBroadcaster" pkg="san_feature_extractor" type=="tfBroadcaster"/>--> 
+  <node name="sanAppScoreNode" pkg="san_nodes" type="sanAppScoreNode.py" />
+  <node name="sanClassificationNode" pkg="san_nodes" type="sanClassificationNode.py"/> 
+  <node name='san_feature_extractor' pkg="san_feature_extractor" type="san_feature_extractor"/>
+  <node name='newMarkers' pkg="san_feature_extractor" type="newMarkers"/>
+  <include file="$(find san_launch)/san_world.launch"/>
+  <!--<include file="$(find san_sim_transforms)/san_sim_tf.launch"/>--> 
+
+</launch> 

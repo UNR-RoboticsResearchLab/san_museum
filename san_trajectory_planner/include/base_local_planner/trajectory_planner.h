@@ -54,21 +54,30 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Point.h>
 
+// SAN: additional message type
+#include <base_local_planner/Position2DInt.h>
+
+//for some datatypes
+#include <tf/transform_datatypes.h>
+
 //for creating a local cost grid
 #include <base_local_planner/map_cell.h>
 #include <base_local_planner/map_grid.h>
 
-namespace base_local_planner {
+#include <san_trajectory_planner/PaCcET.h>
+
+namespace san_trajectory_planner {
   /**
    * @class TrajectoryPlanner
-   * @brief Computes control velocities for a robot given a costmap, a plan, and the robot's position in the world. 
+   * @brief Computes control velocities for a robot given a costmap, a plan, and the robot's position in the world.
    */
   class TrajectoryPlanner{
     friend class TrajectoryPlannerTest; //Need this for gtest to work
+    friend class PaCcET;
     public:
       /**
        * @brief  Constructs a trajectory controller
-       * @param world_model The WorldModel the trajectory controller uses to check for collisions 
+       * @param world_model The WorldModel the trajectory controller uses to check for collisions
        * @param costmap A reference to the Costmap the controller should use
        * @param footprint_spec A polygon representing the footprint of the robot. (Must be convex)
        * @param inscribed_radius The radius of the inscribed circle of the robot
@@ -102,17 +111,17 @@ namespace base_local_planner {
        * @param y_vels A vector of the y velocities the controller will explore
        * @param angular_sim_granularity The distance between simulation points for angular velocity should be small enough that the robot doesn't hit things
        */
-      TrajectoryPlanner(WorldModel& world_model, 
-          const costmap_2d::Costmap2D& costmap, 
+      TrajectoryPlanner(base_local_planner::WorldModel& world_model,
+          const costmap_2d::Costmap2D& costmap,
           std::vector<geometry_msgs::Point> footprint_spec,
           double acc_lim_x = 1.0, double acc_lim_y = 1.0, double acc_lim_theta = 1.0,
-          double sim_time = 1.0, double sim_granularity = 0.025, 
+          double sim_time = 1.0, double sim_granularity = 0.025,
           int vx_samples = 20, int vtheta_samples = 20,
           double path_distance_bias = 0.6, double goal_distance_bias = 0.8, double occdist_scale = 0.2,
-          double heading_lookahead = 0.325, double oscillation_reset_dist = 0.05, 
+          double heading_lookahead = 0.325, double oscillation_reset_dist = 0.05,
           double escape_reset_dist = 0.10, double escape_reset_theta = M_PI_2,
           bool holonomic_robot = true,
-          double max_vel_x = 0.5, double min_vel_x = 0.1, 
+          double max_vel_x = 0.5, double min_vel_x = 0.1,
           double max_vel_th = 1.0, double min_vel_th = -1.0, double min_in_place_vel_th = 0.4,
           double backup_vel = -0.1,
           bool dwa = false, bool heading_scoring = false, double heading_scoring_timestep = 0.1,
@@ -130,36 +139,36 @@ namespace base_local_planner {
       /**
        * @brief Reconfigures the trajectory planner
        */
-      void reconfigure(BaseLocalPlannerConfig &cfg);
+      void reconfigure(base_local_planner::BaseLocalPlannerConfig &cfg);
 
       /**
        * @brief  Given the current position, orientation, and velocity of the robot, return a trajectory to follow
-       * @param global_pose The current pose of the robot in world space 
+       * @param global_pose The current pose of the robot in world space
        * @param global_vel The current velocity of the robot in world space
        * @param drive_velocities Will be set to velocities to send to the robot base
        * @return The selected path or trajectory
        */
-      Trajectory findBestPath(const geometry_msgs::PoseStamped& global_pose,
+      base_local_planner::Trajectory findBestPath(const geometry_msgs::PoseStamped& global_pose,
                               geometry_msgs::PoseStamped& global_vel, geometry_msgs::PoseStamped& drive_velocities);
 
       /**
        * @brief  Update the plan that the controller is following
-       * @param new_plan A new plan for the controller to follow 
+       * @param new_plan A new plan for the controller to follow
        * @param compute_dists Wheter or not to compute path/goal distances when a plan is updated
        */
       void updatePlan(const std::vector<geometry_msgs::PoseStamped>& new_plan, bool compute_dists = false);
 
       /**
        * @brief  Accessor for the goal the robot is currently pursuing in world corrdinates
-       * @param x Will be set to the x position of the local goal 
-       * @param y Will be set to the y position of the local goal 
+       * @param x Will be set to the x position of the local goal
+       * @param y Will be set to the y position of the local goal
        */
       void getLocalGoal(double& x, double& y);
 
       /**
        * @brief  Generate and score a single trajectory
-       * @param x The x position of the robot  
-       * @param y The y position of the robot  
+       * @param x The x position of the robot
+       * @param y The y position of the robot
        * @param theta The orientation of the robot
        * @param vx The x velocity of the robot
        * @param vy The y velocity of the robot
@@ -169,13 +178,13 @@ namespace base_local_planner {
        * @param vtheta_samp The theta velocity used to seed the trajectory
        * @return True if the trajectory is legal, false otherwise
        */
-      bool checkTrajectory(double x, double y, double theta, double vx, double vy, 
+      bool checkTrajectory(double x, double y, double theta, double vx, double vy,
           double vtheta, double vx_samp, double vy_samp, double vtheta_samp);
 
       /**
        * @brief  Generate and score a single trajectory
-       * @param x The x position of the robot  
-       * @param y The y position of the robot  
+       * @param x The x position of the robot
+       * @param y The y position of the robot
        * @param theta The orientation of the robot
        * @param vx The x velocity of the robot
        * @param vy The y velocity of the robot
@@ -185,7 +194,7 @@ namespace base_local_planner {
        * @param vtheta_samp The theta velocity used to seed the trajectory
        * @return The score (as double)
        */
-      double scoreTrajectory(double x, double y, double theta, double vx, double vy, 
+      double scoreTrajectory(double x, double y, double theta, double vx, double vy,
           double vtheta, double vx_samp, double vy_samp, double vtheta_samp);
 
       /**
@@ -207,11 +216,50 @@ namespace base_local_planner {
       geometry_msgs::Polygon getFootprintPolygon() const { return costmap_2d::toPolygon(footprint_spec_); }
       std::vector<geometry_msgs::Point> getFootprint() const { return footprint_spec_; }
 
+      //--------------------------------------------------------------------------------------------------------------------------------//
+      //PaCcET functions
+      //can switch paccet on and off here
+      bool run_paccet = true;
+      bool follow_behavior = false;
+      double inter_dist_threshold = 1.5;    //sets the threshold for the interpersonal distance
+      double intent_threshold = 0;//1.0;
+
+
+      //Calculates the fintess value for the inter personal distance objective
+      vector<double> Calculate_Interpersonal_Distance_Fitness(base_local_planner::Trajectory& p_traj);
+
+      //Calculates radius fitness
+      double calculateRadiusFitness(base_local_planner::Trajectory& p_traj);
+
+      //Calculate intent fitness
+      double calculateIntentFitness(base_local_planner::Trajectory& p_traj);
+
+      //Stores the trajectory if it is a legal movement
+      void Store_trajectory(std::vector<base_local_planner::Trajectory> *pac_traj, base_local_planner::Trajectory& traj);
+
+      //Gets PaCcET fitness for a trajectory
+      void PaCcET_Fitness(PaCcET *pT, int i, std::vector<base_local_planner::Trajectory> *pac_traj);
+
+      //Gets the PaCcET fitness for each ptrajectory
+      void Get_PaCcET_Fitness(PaCcET *pT, std::vector<base_local_planner::Trajectory> *pac_traj);
+
+      //Checks to see where in the current population of trajectories the passed in trajectory should be placed based on its PaCcET fitness
+      struct Less_Than_Policy_Fitness;
+
+      //Sorts the population of trajectories based on their PaCcET fitness from lowest to highest by passing in one trajectoriy at a time to the sort function
+      void Sort_Policies_By_Fitness(std::vector<base_local_planner::Trajectory> *pac_traj);
+
+  		/************************* SAN *****************/
+
+  			sensor_msgs::PointCloud *cloud_;
+
+  		/************************* SAN *****************/
+
     private:
       /**
        * @brief  Create the trajectories we wish to explore, score them, and return the best option
-       * @param x The x position of the robot  
-       * @param y The y position of the robot  
+       * @param x The x position of the robot
+       * @param y The y position of the robot
        * @param theta The orientation of the robot
        * @param vx The x velocity of the robot
        * @param vy The y velocity of the robot
@@ -219,15 +267,15 @@ namespace base_local_planner {
        * @param acc_x The x acceleration limit of the robot
        * @param acc_y The y acceleration limit of the robot
        * @param acc_theta The theta acceleration limit of the robot
-       * @return 
+       * @return
        */
-      Trajectory createTrajectories(double x, double y, double theta, double vx, double vy, double vtheta, 
+      base_local_planner::Trajectory createTrajectories(double x, double y, double theta, double vx, double vy, double vtheta,
           double acc_x, double acc_y, double acc_theta);
 
       /**
        * @brief  Generate and score a single trajectory
-       * @param x The x position of the robot  
-       * @param y The y position of the robot  
+       * @param x The x position of the robot
+       * @param y The y position of the robot
        * @param theta The orientation of the robot
        * @param vx The x velocity of the robot
        * @param vy The y velocity of the robot
@@ -239,27 +287,27 @@ namespace base_local_planner {
        * @param acc_y The y acceleration limit of the robot
        * @param acc_theta The theta acceleration limit of the robot
        * @param impossible_cost The cost value of a cell in the local map grid that is considered impassable
-       * @param traj Will be set to the generated trajectory with its associated score 
+       * @param traj Will be set to the generated trajectory with its associated score
        */
-      void generateTrajectory(double x, double y, double theta, double vx, double vy, 
+      void generateTrajectory(double x, double y, double theta, double vx, double vy,
           double vtheta, double vx_samp, double vy_samp, double vtheta_samp, double acc_x, double acc_y,
-          double acc_theta, double impossible_cost, Trajectory& traj);
+          double acc_theta, double impossible_cost, base_local_planner::Trajectory& traj);
 
       /**
        * @brief  Checks the legality of the robot footprint at a position and orientation using the world model
-       * @param x_i The x position of the robot 
-       * @param y_i The y position of the robot 
+       * @param x_i The x position of the robot
+       * @param y_i The y position of the robot
        * @param theta_i The orientation of the robot
-       * @return 
+       * @return
        */
       double footprintCost(double x_i, double y_i, double theta_i);
 
       base_local_planner::FootprintHelper footprint_helper_;
-    
-      MapGrid path_map_; ///< @brief The local map grid where we propagate path distance
-      MapGrid goal_map_; ///< @brief The local map grid where we propagate goal distance
+
+      base_local_planner::MapGrid path_map_; ///< @brief The local map grid where we propagate path distance
+      base_local_planner::MapGrid goal_map_; ///< @brief The local map grid where we propagate goal distance
       const costmap_2d::Costmap2D& costmap_; ///< @brief Provides access to cost map information
-      WorldModel& world_model_; ///< @brief The world model that the controller uses for collision detection
+      base_local_planner::WorldModel& world_model_; ///< @brief The world model that the controller uses for collision detection
 
       std::vector<geometry_msgs::Point> footprint_spec_; ///< @brief The footprint specification of the robot
 
@@ -292,13 +340,13 @@ namespace base_local_planner {
       double prev_x_, prev_y_; ///< @brief Used to calculate the distance the robot has traveled before reseting oscillation booleans
       double escape_x_, escape_y_, escape_theta_; ///< @brief Used to calculate the distance the robot has traveled before reseting escape booleans
 
-      Trajectory traj_one, traj_two; ///< @brief Used for scoring trajectories
+      base_local_planner::Trajectory traj_one, traj_two; ///< @brief Used for scoring trajectories
 
       double heading_lookahead_; ///< @brief How far the robot should look ahead of itself when differentiating between different rotational velocities
       double oscillation_reset_dist_; ///< @brief The distance the robot must travel before it can explore rotational velocities that were unsuccessful in the past
       double escape_reset_dist_, escape_reset_theta_; ///< @brief The distance the robot must travel before it can leave escape mode
-      bool holonomic_robot_; ///< @brief Is the robot holonomic or not? 
-      
+      bool holonomic_robot_; ///< @brief Is the robot holonomic or not?
+
       double max_vel_x_, min_vel_x_, max_vel_th_, min_vel_th_, min_in_place_vel_th_; ///< @brief Velocity limits for the controller
 
       double backup_vel_; ///< @brief The velocity to use while backing up
@@ -324,7 +372,7 @@ namespace base_local_planner {
        * @param  vy The current y velocity
        * @param  theta The current orientation
        * @param  dt The timestep to take
-       * @return The new x position 
+       * @return The new x position
        */
       inline double computeNewXPosition(double xi, double vx, double vy, double theta, double dt){
         return xi + (vx * cos(theta) + vy * cos(M_PI_2 + theta)) * dt;
@@ -337,7 +385,7 @@ namespace base_local_planner {
        * @param  vy The current y velocity
        * @param  theta The current orientation
        * @param  dt The timestep to take
-       * @return The new y position 
+       * @return The new y position
        */
       inline double computeNewYPosition(double yi, double vx, double vy, double theta, double dt){
         return yi + (vx * sin(theta) + vy * sin(M_PI_2 + theta)) * dt;
@@ -357,7 +405,7 @@ namespace base_local_planner {
       //compute velocity based on acceleration
       /**
        * @brief  Compute velocity based on acceleration
-       * @param vg The desired velocity, what we're accelerating up to 
+       * @param vg The desired velocity, what we're accelerating up to
        * @param vi The current velocity
        * @param a_max An acceleration limit
        * @param  dt The timestep to take
