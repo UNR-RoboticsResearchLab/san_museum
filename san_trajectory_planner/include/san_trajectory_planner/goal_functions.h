@@ -34,8 +34,8 @@
 *
 * Author: Eitan Marder-Eppstein
 *********************************************************************/
-#ifndef BASE_LOCAL_PLANNER_GOAL_FUNCTIONS_H_
-#define BASE_LOCAL_PLANNER_GOAL_FUNCTIONS_H_
+#ifndef SAN_TRAJECTORY_PLANNER_GOAL_FUNCTIONS_H_
+#define SAN_TRAJECTORY_PLANNER_GOAL_FUNCTIONS_H_
 
 #include <ros/ros.h>
 #include <tf/transform_listener.h>

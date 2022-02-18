@@ -35,7 +35,7 @@
 * Author: Eitan Marder-Eppstein
 *********************************************************************/
 
-#include <san_trajectory_planner/trajectory_planner_ros.h>
+#include <san_trajectory_planner/san_trajectory_planner_ros.h>
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -55,9 +55,6 @@
 
 #include <nav_core/parameter_magic.h>
 #include <tf2/utils.h>
-
-//register this planner as a BaseLocalPlanner plugin
-PLUGINLIB_EXPORT_CLASS(san_trajectory_planner::TrajectoryPlannerROS, nav_core::BaseLocalPlanner)
 
 namespace san_trajectory_planner {
 
@@ -515,7 +512,7 @@ namespace san_trajectory_planner {
 
     //if we cannot move... tell someone
     if (path.cost_ < 0) {
-      ROS_DEBUG_NAMED("trajectory_planner_ros",
+      ROS_DEBUG_NAMED("san_trajectory_planner_ros",
           "The rollout planner failed to find a valid plan. This means that the footprint of the robot was in collision for all simulated trajectories.");
       local_plan.clear();
       publishPlan(transformed_plan, g_plan_pub_);
@@ -523,7 +520,7 @@ namespace san_trajectory_planner {
       return false;
     }
 
-    ROS_DEBUG_NAMED("trajectory_planner_ros", "A valid velocity command of (%.2f, %.2f, %.2f) was found for this cycle.",
+    ROS_DEBUG_NAMED("san_trajectory_planner_ros", "A valid velocity command of (%.2f, %.2f, %.2f) was found for this cycle.",
         cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
 
     // Fill out the local plan
@@ -614,4 +611,7 @@ namespace san_trajectory_planner {
     //return flag set in controller
     return reached_goal_;
   }
-};
+}
+
+//register this planner as a BaseLocalPlanner plugin
+PLUGINLIB_EXPORT_CLASS(san_trajectory_planner::TrajectoryPlannerROS, nav_core::BaseLocalPlanner)

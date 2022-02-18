@@ -34,8 +34,8 @@
 *
 * Author: Eitan Marder-Eppstein
 *********************************************************************/
-#ifndef TRAJECTORY_ROLLOUT_TRAJECTORY_PLANNER_ROS_H_
-#define TRAJECTORY_ROLLOUT_TRAJECTORY_PLANNER_ROS_H_
+#ifndef TRAJECTORY_ROLLOUT_SAN_TRAJECTORY_PLANNER_ROS_H_
+#define TRAJECTORY_ROLLOUT_SAN_TRAJECTORY_PLANNER_ROS_H_
 
 #include <ros/ros.h>
 #include <costmap_2d/costmap_2d.h>
@@ -45,7 +45,7 @@
 #include <san_trajectory_planner/point_grid.h>
 #include <san_trajectory_planner/costmap_model.h>
 #include <san_trajectory_planner/voxel_grid_model.h>
-#include <san_trajectory_planner/trajectory_planner.h>
+#include <san_trajectory_planner/san_trajectory_planner.h>
 #include <san_trajectory_planner/map_grid_visualizer.h>
 
 #include <san_trajectory_planner/planar_laser_scan.h>
@@ -219,11 +219,11 @@ namespace san_trajectory_planner {
 
       ros::Publisher g_plan_pub_, l_plan_pub_;
 
-      /************** san_trajecotry_planner ************/
+      /************** san_trajectory_planner ************/
 
 			ros::Publisher prob_cloud_pub_;
 
-      /************** san_trajecotry_planner ************/
+      /************** san_trajectory_planner ************/
 
       dynamic_reconfigure::Server<base_local_planner::BaseLocalPlannerConfig> *dsrv_;
       base_local_planner::BaseLocalPlannerConfig default_config_;

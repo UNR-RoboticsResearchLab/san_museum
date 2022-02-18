@@ -35,8 +35,8 @@
 * Author: Eitan Marder-Eppstein
 *********************************************************************/
 
-//#include <base_local_planner/trajectory_planner.h>
-#include <san_trajectory_planner/trajectory_planner_ros.h>
+#include <san_trajectory_planner/san_trajectory_planner.h>
+#include <san_trajectory_planner/san_trajectory_planner_ros.h>
 #include <costmap_2d/footprint.h>
 #include <string>
 #include <sstream>

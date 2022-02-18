@@ -22,7 +22,8 @@
 
     <!-- change local planner -->
     <!-- <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/> -->
-    <param name="base_local_planner" value="san_trajectory_planner/TrajectoryPlannerROS"/>
+    <!-- <param name="base_local_planner" value="san_trajectory_planner/TrajectoryPlannerROS"/> -->
+    <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
 
     <rosparam file="$(find sarg_2dnav)/config/global_costmap_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find sarg_2dnav)/config/local_costmap_params.yaml" command="load" ns="local_costmap"/>

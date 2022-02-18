@@ -33,8 +33,8 @@
  ***********************************************************/
 
 
-#ifndef __base_local_planner__LOCALPLANNERLIMITS_H__
-#define __base_local_planner__LOCALPLANNERLIMITS_H__
+#ifndef __SAN_TRAJECTORY_PLANNER__LOCALPLANNERLIMITS_H__
+#define __SAN_TRAJECTORY_PLANNER__LOCALPLANNERLIMITS_H__
 
 #include <Eigen/Core>
 

@@ -47,7 +47,6 @@
 
 #include <san_trajectory_planner/world_model.h>
 #include <san_trajectory_planner/trajectory.h>
-#include <base_local_planner/Position2DInt.h>
 #include <base_local_planner/BaseLocalPlannerConfig.h>
 
 //we'll take in a path as a vector of poses

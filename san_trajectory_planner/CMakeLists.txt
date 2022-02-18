@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(base_local_planner)
+project(san_trajectory_planner)
 
 include(CheckIncludeFile)
 
@@ -66,8 +66,8 @@ generate_dynamic_reconfigure_options(
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES
-        base_local_planner
-        trajectory_planner_ros
+        san_trajectory_planner
+        san_trajectory_planner_ros
     CATKIN_DEPENDS
         angles
         costmap_2d
@@ -96,7 +96,7 @@ endif (HAVE_SYS_TIME_H)
 #set(ROS_COMPILE_FLAGS "-g" ${ROS_COMPILE_FLAGS})
 #set(ROS_LINK_FLAGS "-g" ${ROS_LINK_FLAGS})
 
-add_library(base_local_planner
+add_library(san_trajectory_planner
 	src/footprint_helper.cpp
 	src/goal_functions.cpp
 	src/map_cell.cpp
@@ -117,29 +117,27 @@ add_library(base_local_planner
 	src/twirling_cost_function.cpp
 	src/voxel_grid_model.cpp
   src/PaCcET.cpp)
-add_dependencies(base_local_planner base_local_planner_gencfg)
-add_dependencies(base_local_planner base_local_planner_generate_messages_cpp)
-add_dependencies(base_local_planner nav_msgs_generate_messages_cpp)
-target_link_libraries(base_local_planner
+
+target_link_libraries(san_trajectory_planner
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
     ${Eigen_LIBRARIES}
     )
 
-add_library(trajectory_planner_ros
-	src/trajectory_planner.cpp
-	src/trajectory_planner_ros.cpp)
-add_dependencies(trajectory_planner_ros ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(trajectory_planner_ros
-     base_local_planner)
+add_library(san_trajectory_planner_ros
+	src/san_trajectory_planner.cpp
+	src/san_trajectory_planner.cpp)
+add_dependencies(san_trajectory_planner_ros ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(san_trajectory_planner_ros
+     san_trajectory_planner)
 
 add_executable(point_grid src/point_grid_node.cpp)
 add_dependencies(point_grid ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(point_grid ${catkin_LIBRARIES} base_local_planner)
+target_link_libraries(point_grid ${catkin_LIBRARIES} san_trajectory_planner)
 
 install(TARGETS
-            base_local_planner
-            trajectory_planner_ros
+            san_trajectory_planner
+            san_trajectory_planner_ros
        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
@@ -156,15 +154,15 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest)
-  catkin_add_gtest(base_local_planner_utest
+  catkin_add_gtest(san_trajectory_planner_utest
     test/gtest_main.cpp
     test/utest.cpp
     test/velocity_iterator_test.cpp
     test/footprint_helper_test.cpp
     test/trajectory_generator_test.cpp
     test/map_grid_test.cpp)
-  target_link_libraries(base_local_planner_utest
-      base_local_planner trajectory_planner_ros
+  target_link_libraries(san_trajectory_planner_utest
+      san_trajectory_planner san_trajectory_planner_ros
       )
 
   catkin_add_gtest(line_iterator

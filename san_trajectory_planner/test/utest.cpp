@@ -39,7 +39,7 @@
 #include <san_trajectory_planner/map_cell.h>
 #include <san_trajectory_planner/map_grid.h>
 #include <san_trajectory_planner/trajectory.h>
-#include <san_trajectory_planner/trajectory_planner.h>
+#include <san_trajectory_planner/san_trajectory_planner.h>
 #include <san_trajectory_planner/costmap_model.h>
 #include <costmap_2d/costmap_2d.h>
 #include <math.h>
