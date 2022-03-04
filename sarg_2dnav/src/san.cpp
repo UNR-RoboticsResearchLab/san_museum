@@ -1,6 +1,7 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <nav_msgs/GetPlan.h>
+#include <sound_play/sound_play.h>
 
 #include "PoseListener.h"
 #include "PeopleListener.h"
@@ -21,6 +22,8 @@ int main (int argc, char ** argv)
   // initialize node
   ros::init (argc, argv, "san");
   //ROS_DEBUG ("initialized node san");
+
+  //sound_play::SoundClient sound;
 
   // declare listeners
   // PoseListener subscribes to amcl_pose topic
@@ -293,6 +296,10 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
       potentialGoal = stationaryLocation;
 
       goalIsOk = checkGoal (currentCoordinates, potentialGoal);
+
+      // play sound here
+      //sound.playWave ("file location");
+
 
       // if no path to stationary location is available
       if (!goalIsOk)

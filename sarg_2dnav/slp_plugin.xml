@@ -1,0 +1,7 @@
+<library path="lib/lib_local_planner">
+  <class name="san_local_planner/SanLocalPlanner" type="san_local_planner/SanLocalPlanner" base_class_type="nav_core::BaseLocalPlanner">
+    <description>
+      BaseLocalPlanner plugin that will incorporate PaCcET
+    </description>
+  </class>
+</library>

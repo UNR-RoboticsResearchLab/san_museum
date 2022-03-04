@@ -17,6 +17,13 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   people_msgs
   dynamic_reconfigure
+  base_local_planner
+  nav_core
+  pluginlib
+  tf2
+  tf2_geometry_msgs
+  tf2_ros
+  sound_play
 )
 
 ## System dependencies are found with CMake's conventions
@@ -111,9 +118,20 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES sarg_2dnav
-#  CATKIN_DEPENDS move_base
-#  DEPENDS system_lib
+  LIBRARIES
+    sarg_2dnav
+    san_local_planner
+  CATKIN_DEPENDS
+    move_base
+    base_local_planner
+    costmap_2d
+    nav_core
+    pluginlib
+    roscpp
+    tf2
+    tf2_ros
+    sound_play
+  DEPENDS system_lib
 )
 
 ###########
@@ -122,15 +140,10 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/sarg_2dnav.cpp
-# )
+add_library(san_local_planner src/san_local_planner.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
