@@ -12,7 +12,7 @@
 
   <!-- start stage in the given world -->
   <param name="includeFile" value="$(find sarg_2dnav)/maps/stageworlds/demo.world" type="str"/>
-  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find sarg_2dnav)/maps/stageworlds/pebfirst_clean.world"/>
+  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find sarg_2dnav)/maps/stageworlds/demo.world"/>
 
   <!-- launch joystick teleop -->
   <include file="$(find sarg_bot)/launch/teleop_joy.launch"/>
@@ -21,5 +21,5 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sarg_2dnav)/config/rvizConfig.rviz"/>
 
   <!-- launch leg detector, for some reason this terminates when launched from this file so it will have to be started manually -->
-  <!-- <include file="$(find leg_detector)/launch/leg_detector.launch"/> -->
+  <include file="$(find people_velocity_tracker)/launch/filtered_tracked_detector.launch"/>
 </launch>

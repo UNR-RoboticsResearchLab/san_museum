@@ -111,7 +111,6 @@ char readRoom (int roomDensity, double roomVulnerability)
   }
 
   // ROS_INFO ("high vulnerability");
-
   if (highDensity == false)
   {
     // reserved
