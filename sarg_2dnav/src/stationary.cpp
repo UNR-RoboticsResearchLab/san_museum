@@ -7,9 +7,7 @@
 #include "PeopleListener.h"
 #include "MovementConfigurator.h"
 
-char readRoom (int roomDensity, double roomVulnerability);
-
-std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations, char goalType);
+std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations);
 
 bool checkGoal (std::vector <double> currentCoordinates, std::vector <double> goalCoordinates);
 bool goToGoal (std::vector <double> goalCoordinates);
@@ -50,7 +48,7 @@ int main (int argc, char ** argv)
     bool goalReached = false;
 
     // set a goal based on vulnerability and density
-    goal = findGoal (currentPose.getPose (), peoplePresent.getPeopleLocations (), readRoom (peoplePresent.getPeopleLocations ().size (), vulnerability));
+    goal = findGoal (currentPose.getPose (), peoplePresent.getPeopleLocations ());
     // go to goal and check if goal was reached
     goalReached = goToGoal (goal);
 
@@ -72,13 +70,7 @@ int main (int argc, char ** argv)
   return 0;
 }
 
-char readRoom (int roomDensity, double roomVulnerability)
-{
-  // this program will only exhibit stationary behavior
-  return 's';
-}
-
-std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations, char goalType)
+std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations)
 {
   // for use of the at () vector function
   int x = 0;
@@ -87,9 +79,7 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
   MovementConfigurator movementLimiter;
 
   // the "kiosk" location for the robot to stay in during stationary behavior
-  std::vector <double> stationaryLocation = {27.5, -41.5};
-  // a set of predetermined locations for the robot to go to during reserved behavior
-  std::vector <std::vector <double>> reservedLocations = {{31.6, -43.9}, {28.5, -44.3}, {27.6, -37.6}};
+  std::vector <double> stationaryLocation = {-3.35937, -3.2264};
 
   // stores goals to be tested
   std::vector <double> potentialGoal;
@@ -97,174 +87,26 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
   bool goalIsOk = false;
 
   // search for a goal
-  switch (goalType)
+  ROS_INFO ("stationary behavior");
+
+  movementLimiter.setVelocityLimit ('x', 0.15);
+
+  // go to designated stationary location
+
+  potentialGoal = stationaryLocation;
+
+  goalIsOk = checkGoal (currentCoordinates, potentialGoal);
+
+  // play sound here
+  //sound.playWave ("file location");
+
+
+  // if no path to stationary location is available
+  if (!goalIsOk)
   {
-    // engaging
-    case 'e':
-    {
-      ROS_INFO ("engaging behavior");
-
-      movementLimiter.setVelocityLimit ('x', 0.45);
-
-      int index = peopleLocations.size ();
-
-      do
-      {
-        // iterate through the people vector backwards (its sorted from least reliable to most)
-        index -= 1;
-
-        // forget the previous invalid goal
-        potentialGoal.clear ();
-
-        // set a new goal halfway between the robot and a person
-        potentialGoal.push_back ((currentCoordinates.at (x) + peopleLocations.at (index).at (x)) / 2);
-        potentialGoal.push_back ((currentCoordinates.at (y) + peopleLocations.at (index).at (y)) / 2);
-
-        // test the goal
-        goalIsOk = checkGoal (currentCoordinates, potentialGoal);
-      }
-      // while there is a person location to test and a valid goal has not been found
-      while (index > 0 && !goalIsOk);
-
-      // if goal between a person has not been found
-      if (!goalIsOk)
-      {
-        ROS_INFO ("could not find person to interact with, falling back to wandering");
-        srand (time (NULL));
-        // wander randomly to convey less serious tone within museum
-        do
-        {
-          // forget the previous invalid goal
-          potentialGoal.clear ();
-
-          // set a goal at a random location relative to the robot's current location
-          potentialGoal.push_back (currentCoordinates.at (x) + (rand () % 100 - 50) / 10);
-          potentialGoal.push_back (currentCoordinates.at (y) + (rand () % 100 - 50) / 10);
-
-          // test the goal
-          goalIsOk = checkGoal (currentCoordinates, potentialGoal);
-        }
-        // while a valid goal has not been found
-        while (!goalIsOk);
-      }
-
-      break;
-    }
-    // conservative
-    case 'c':
-    {
-      ROS_INFO ("conservative behavior");
-
-      movementLimiter.setVelocityLimit ('x', 0.35);
-
-      int index = peopleLocations.size ();
-
-      do
-      {
-        // iterate through the people vector backwards (its sorted from least reliable to most)
-        index -= 1;
-
-        // forget the previous invalid goal
-        potentialGoal.clear ();
-
-        // set a new goal, todo: keep a larger distance from people
-        potentialGoal.push_back ((currentCoordinates.at (x) + peopleLocations.at (index).at (x)) / 2);
-        potentialGoal.push_back ((currentCoordinates.at (y) + peopleLocations.at (index).at (y)) / 2);
-
-        // test the goal
-        goalIsOk = checkGoal (currentCoordinates, potentialGoal);
-      }
-      // while a valid goal has not been found
-      while (index > 0 && !goalIsOk);
-
-      // if goal has not been found
-      if (!goalIsOk)
-      {
-        ROS_INFO ("could not find person to interact with, staying in current position");
-
-        // stay where you are
-        potentialGoal = currentCoordinates;
-      }
-
-      break;
-    }
-
-    // reserved
-    case 'r':
-    {
-      ROS_INFO ("reserved behavior");
-
-      movementLimiter.setVelocityLimit ('x', 0.25);
-
-      bool alreadyAtReservedLocation;
-
-      // only go to predetermined locations
-
-      for (int index = 0; index < reservedLocations.size (); index += 1)
-      {
-        if (abs (currentCoordinates.at (x) - reservedLocations.at (index).at (x)) < 1 && abs (currentCoordinates.at (y) - reservedLocations.at (index).at (y)) < 1)
-        {
-          alreadyAtReservedLocation = true;
-        }
-      }
-
-      if (alreadyAtReservedLocation)
-      {
-        ROS_INFO ("already at reserved location, staying in current position");
-        goalIsOk = true;
-        potentialGoal = currentCoordinates;
-      }
-
-      else
-      {
-        int randomReservedLocation = rand () % 3;
-
-        potentialGoal.clear ();
-
-        potentialGoal.push_back (reservedLocations.at (randomReservedLocation).at (x));
-        potentialGoal.push_back (reservedLocations.at (randomReservedLocation).at (y));
-
-        goalIsOk = checkGoal (currentCoordinates, potentialGoal);
-      }
-
-      // if goal has not been found
-      if (!goalIsOk)
-      {
-        ROS_INFO ("could not go to predetermined location, staying in current position");
-        // stay where you are
-        potentialGoal = currentCoordinates;
-      }
-
-      break;
-    }
-
-    // stationary
-    case 's':
-    {
-      ROS_INFO ("stationary behavior");
-
-      movementLimiter.setVelocityLimit ('x', 0.15);
-
-      // go to designated stationary location
-
-      potentialGoal = stationaryLocation;
-
-      goalIsOk = checkGoal (currentCoordinates, potentialGoal);
-
-      // play sound here
-      //sound.playWave ("file location");
-
-
-      // if no path to stationary location is available
-      if (!goalIsOk)
-      {
-        ROS_INFO ("could not go to stationary location, staying in current position");
-        // stay where you are
-        potentialGoal = currentCoordinates;
-      }
-
-      break;
-    }
+    ROS_INFO ("could not go to stationary location, staying in current position");
+    // stay where you are
+    potentialGoal = currentCoordinates;
   }
 
   return potentialGoal;
@@ -280,7 +122,7 @@ bool checkGoal (std::vector <double> currentCoordinates, std::vector <double> go
   int x = 0;
   int y = 1;
 
-  double locationThreshold = 1;
+  double locationThreshold = 0.33;
 
   // fill in the request for make_plan service
   fillPathRequest (planSrv.request, currentCoordinates, goalCoordinates);
