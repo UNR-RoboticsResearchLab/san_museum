@@ -157,6 +157,10 @@ add_library(san_local_planner src/san_local_planner.cpp)
 add_executable(wander src/wander.cpp src/PoseListener.cpp)
 add_executable(follow src/follow.cpp src/PoseListener.cpp src/PeopleListener.cpp src/ObjectListener.cpp)
 add_executable(san src/san.cpp src/PoseListener.cpp src/PeopleListener.cpp src/MovementConfigurator.cpp)
+add_executable(engaging src/engaging.cpp src/PoseListener.cpp src/PeopleListener.cpp src/MovementConfigurator.cpp)
+add_executable(conservative src/conservative.cpp src/PoseListener.cpp src/PeopleListener.cpp src/MovementConfigurator.cpp)
+add_executable(reserved src/reserved.cpp src/PoseListener.cpp src/PeopleListener.cpp src/MovementConfigurator.cpp)
+add_executable(stationary src/stationary.cpp src/PoseListener.cpp src/PeopleListener.cpp src/MovementConfigurator.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -177,6 +181,22 @@ target_link_libraries(follow
 )
 
 target_link_libraries(san
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(engaging
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(conservative
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(reserved
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(stationary
   ${catkin_LIBRARIES}
 )
 
