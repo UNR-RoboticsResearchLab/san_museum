@@ -99,8 +99,8 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
     potentialGoal.clear ();
 
     // set a new goal, todo: keep a larger distance from people
-    potentialGoal.push_back ((currentCoordinates.at (x) + peopleLocations.at (index).at (x)) / 2);
-    potentialGoal.push_back ((currentCoordinates.at (y) + peopleLocations.at (index).at (y)) / 2);
+    potentialGoal.push_back ((currentCoordinates.at (x) + peopleLocations.at (index).at (x)) / 4);
+    potentialGoal.push_back ((currentCoordinates.at (y) + peopleLocations.at (index).at (y)) / 4);
 
     // test the goal
     goalIsOk = checkGoal (currentCoordinates, potentialGoal);

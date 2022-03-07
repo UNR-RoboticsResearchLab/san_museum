@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <nav_msgs/GetPlan.h>
@@ -6,6 +8,8 @@
 #include "PoseListener.h"
 #include "PeopleListener.h"
 #include "MovementConfigurator.h"
+
+void saveLocation (std::vector <double> currentCoordinates, char locationType);
 
 std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations);
 
@@ -35,6 +39,9 @@ int main (int argc, char ** argv)
   // spinOnce has to be called twice before getting correct pose, there's probably a better way to do this
   ros::spinOnce ();
 
+  // store initial pose as stationary location
+  saveLocation (currentPose.getPose (), 's');
+
   // loop until ctrl-c is pressed or ros::shutdown is called
   while (ros::ok ())
   {
@@ -55,6 +62,7 @@ int main (int argc, char ** argv)
     if (goalReached)
     {
       ROS_INFO ("behavior finished successfully\n");
+      saveLocation (currentPose.getPose (), 'r');
     }
 
     else
@@ -68,6 +76,85 @@ int main (int argc, char ** argv)
   }
 
   return 0;
+}
+
+// code adapted from http://www.cplusplus.com/forum/general/47399/#msg274269
+void saveLocation (std::vector <double> currentCoordinates, char locationType)
+{
+  // for use of the at () vector function
+  int x = 0;
+  int y = 1;
+
+  std::string stationaryLine = "stationary: ";
+  std::string reservedLine = "reserved: ";
+
+  std::string currentLine;
+
+  // you have to write the full path or else the file path will depend on where the node is run (https://answers.ros.org/question/11642/write-to-a-file-from-a-c-ros-node/)
+  std::ofstream temporaryFile ("/home/sarg_2dnav/locationsTemporary.txt");
+  std::ifstream locationsFile ("/home/sarg_2dnav/locations.txt");
+
+  if (!locationsFile.is_open () || !temporaryFile.is_open ())
+  {
+    if (!locationsFile.is_open () && !temporaryFile.is_open ())
+    {
+      ROS_WARN ("could not open both locations.txt and locationsTemporary.txt\n");
+    }
+
+    else if (!locationsFile.is_open ())
+    {
+      ROS_WARN ("could not open locations.txt\n");
+    }
+
+    else
+    {
+      ROS_WARN ("could not open locationsTemporary.txt\n");
+    }
+
+    return;
+  }
+
+  while (getline (locationsFile, currentLine))
+  {
+    if (locationType == 's' && currentLine == stationaryLine)
+    {
+      temporaryFile << "stationary: " << std::endl;
+
+      // just to stop unwanted lines of text from appearing
+      getline (locationsFile, currentLine);
+
+      temporaryFile << currentCoordinates.at (x) << ", " << currentCoordinates.at (y) << std::endl;
+
+      ROS_INFO ("location saved for stationary behavior\n");
+    }
+
+    else if (locationType == 'r' && currentLine == reservedLine)
+    {
+      temporaryFile << "reserved: " << std::endl;
+
+      // we want to append to the list of reserved locations
+      getline (locationsFile, currentLine);
+
+      temporaryFile << currentLine << " " << currentCoordinates.at (x) << ", " << currentCoordinates.at (y) << std::endl;
+
+      ROS_INFO ("location saved for reserved behavior\n");
+    }
+
+    // this means that the current line is not be what we want to modify
+    else
+    {
+      temporaryFile << currentLine << std::endl;
+    }
+  }
+
+  temporaryFile.close ();
+  locationsFile.close ();
+
+  remove ("/home/sarg_2dnav/locations.txt");
+
+  rename ("/home/sarg_2dnav/locationsTemporary.txt", "/home/sarg_2dnav/locations.txt");
+
+  return;
 }
 
 std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations)
