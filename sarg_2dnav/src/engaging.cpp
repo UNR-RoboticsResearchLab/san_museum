@@ -85,30 +85,46 @@ void saveLocation (std::vector <double> currentCoordinates, char locationType)
   int x = 0;
   int y = 1;
 
-  std::string stationaryLine = "stationary: ";
-  std::string reservedLine = "reserved: ";
+  std::string stationaryLine = "stationary:";
+  std::string reservedLine = "reserved:";
 
   std::string currentLine;
 
   // you have to write the full path or else the file path will depend on where the node is run (https://answers.ros.org/question/11642/write-to-a-file-from-a-c-ros-node/)
-  std::ofstream temporaryFile ("/home/sarg_2dnav/locationsTemporary.txt");
-  std::ifstream locationsFile ("/home/sarg_2dnav/locations.txt");
+  std::ofstream temporaryFile ("locationsTemporary.txt");
+  std::ifstream locationsFile ("locations.txt");
 
   if (!locationsFile.is_open () || !temporaryFile.is_open ())
   {
     if (!locationsFile.is_open () && !temporaryFile.is_open ())
     {
-      ROS_WARN ("could not open both locations.txt and locationsTemporary.txt\n");
+      ROS_WARN ("could not open both locations.txt and locationsTemporary.txt");
     }
 
     else if (!locationsFile.is_open ())
     {
-      ROS_WARN ("could not open locations.txt\n");
+      ROS_WARN ("could not open locations.txt, creating");
+
+      // open the file for writing
+      std::ofstream locationsFileCreated ("locations.txt");
+
+      // create and set locations.txt to expected format
+      locationsFileCreated << "stationary:" << std::endl;
+      locationsFileCreated << std::endl;
+      locationsFileCreated << "reserved:" << std::endl;
+      locationsFileCreated << std::endl;
+
+      locationsFileCreated.close ();
+
+      ROS_INFO ("created locations.txt");
+
+      // reopen the file for reading
+      std::ifstream locationsFile ("locations.txt");
     }
 
     else
     {
-      ROS_WARN ("could not open locationsTemporary.txt\n");
+      ROS_WARN ("could not open locationsTemporary.txt");
     }
 
     return;
@@ -118,26 +134,26 @@ void saveLocation (std::vector <double> currentCoordinates, char locationType)
   {
     if (locationType == 's' && currentLine == stationaryLine)
     {
-      temporaryFile << "stationary: " << std::endl;
+      temporaryFile << "stationary:" << std::endl;
 
       // just to stop unwanted lines of text from appearing
       getline (locationsFile, currentLine);
 
-      temporaryFile << currentCoordinates.at (x) << ", " << currentCoordinates.at (y) << std::endl;
+      temporaryFile << "( " << currentCoordinates.at (x) << " , " << currentCoordinates.at (y) << " )" << std::endl;
 
-      ROS_INFO ("location saved for stationary behavior\n");
+      ROS_INFO ("location saved for stationary behavior");
     }
 
     else if (locationType == 'r' && currentLine == reservedLine)
     {
-      temporaryFile << "reserved: " << std::endl;
+      temporaryFile << "reserved:" << std::endl;
 
       // we want to append to the list of reserved locations
       getline (locationsFile, currentLine);
 
-      temporaryFile << currentLine << " " << currentCoordinates.at (x) << ", " << currentCoordinates.at (y) << std::endl;
+      temporaryFile << currentLine << "( " << currentCoordinates.at (x) << ", " << currentCoordinates.at (y) << " ) " << std::endl;
 
-      ROS_INFO ("location saved for reserved behavior\n");
+      ROS_INFO ("location saved for reserved behavior");
     }
 
     // this means that the current line is not be what we want to modify
@@ -150,9 +166,9 @@ void saveLocation (std::vector <double> currentCoordinates, char locationType)
   temporaryFile.close ();
   locationsFile.close ();
 
-  remove ("/home/sarg_2dnav/locations.txt");
+  remove ("locations.txt");
 
-  rename ("/home/sarg_2dnav/locationsTemporary.txt", "/home/sarg_2dnav/locations.txt");
+  rename ("locationsTemporary.txt", "locations.txt");
 
   return;
 }

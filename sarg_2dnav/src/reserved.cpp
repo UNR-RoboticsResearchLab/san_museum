@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <nav_msgs/GetPlan.h>
@@ -6,6 +8,8 @@
 #include "PoseListener.h"
 #include "PeopleListener.h"
 #include "MovementConfigurator.h"
+
+//std::vector <std::vector <double>> loadLocations ();
 
 std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations);
 
@@ -70,6 +74,66 @@ int main (int argc, char ** argv)
   return 0;
 }
 
+/*
+std::vector <std::vector <double>> loadLocations ()
+{
+  std::vector <std::vector <double>> locations;
+
+  // for use of the at () vector function
+  int x = 0;
+  int y = 1;
+
+  std::string reservedLine = "reserved:";
+
+  std::string currentLine;
+
+  std::ifstream locationsFile ("locations.txt");
+
+  if (!locationsFile.is_open ())
+  {
+    ROS_WARN ("could not open locations.txt");
+
+    return locations;
+  }
+
+  while (getline (locationsFile, currentLine))
+  {
+    if (currentLine == reservedLine)
+    {
+      std::cout << "found line \"reserved:\"" << std::endl;
+      // go to the next line, that one has the coordinates
+      getline (locationsFile, currentLine);
+
+      // create a stream so the string can be properly evaluated
+      std::stringstream currentLineStream;
+      currentLineStream >> currentLine;
+
+      // every coordinate found in the file will be stored here
+      std::vector <double> coordinates;
+
+      // loop until end of string
+      while (!currentLineStream.eof ())
+      {
+
+      }
+
+      // there should always be an even number of coordinates so this shouldnt break
+      for (int index = 0; index < coordinates.size (); index += 2)
+      {
+        //std::vector <double> location = {coordinates.at (index), coordinates.at (index + 1)};
+        //locations.push_back (location);
+      }
+
+      locationsFile.close ();
+
+      ROS_INFO ("reserved locations loaded");
+    }
+  }
+
+  return locations;
+}
+*/
+
 std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations)
 {
   // for use of the at () vector function
@@ -79,7 +143,7 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
   MovementConfigurator movementLimiter;
 
   // a set of predetermined locations for the robot to go to during reserved behavior
-  std::vector <std::vector <double>> reservedLocations = {{1.85129, 2.45082}, {-1.97235, 1.99265}, {3.74256, -2.62888}};
+  std::vector <std::vector <double>> reservedLocations = {{0, 0}};
 
   // stores goals to be tested
   std::vector <double> potentialGoal;
