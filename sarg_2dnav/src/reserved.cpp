@@ -143,7 +143,7 @@ std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vec
   MovementConfigurator movementLimiter;
 
   // a set of predetermined locations for the robot to go to during reserved behavior
-  std::vector <std::vector <double>> reservedLocations = {{0, 0}};
+  std::vector <std::vector <double>> reservedLocations = {{0, 0}, {0, 0}};
 
   // stores goals to be tested
   std::vector <double> potentialGoal;

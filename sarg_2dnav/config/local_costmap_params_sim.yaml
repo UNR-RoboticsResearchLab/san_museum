@@ -4,7 +4,8 @@ plugins:
 #  - {name: social, type: "social_navigation_layers::ProxemicLayer"} # people detection, to use this git clone -b noetic https://github.com/DLu/navigation_layers.git
 #  - {name: passing, type: "social_navigation_layers::PassingLayer"} # people detection, to use this git clone -b noetic https://github.com/DLu/navigation_layers.git
 
-footprint: [[.36, .25], [.36, -0.25], [-0.29, -0.25], [-0.29, .25]]
+# pioneer in sim thinks its smaller than its actual size
+footprint: [[.375, .275], [.375, -0.275], [-0.3, -0.275], [-0.3, .275]]
 
 global_frame: map
 robot_base_frame: base_link

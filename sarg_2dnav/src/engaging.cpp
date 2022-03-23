@@ -246,7 +246,7 @@ bool checkGoal (std::vector <double> currentCoordinates, std::vector <double> go
   int x = 0;
   int y = 1;
 
-  double locationThreshold = 1;
+  double locationThreshold = 0.5;
 
   // fill in the request for make_plan service
   fillPathRequest (planSrv.request, currentCoordinates, goalCoordinates);
