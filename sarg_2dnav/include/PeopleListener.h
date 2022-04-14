@@ -1,3 +1,6 @@
+#ifndef PEOPLE_LISTENER_H_
+#define PEOPLE_LISTENER_H_
+
 #include <ros/ros.h>
 #include <people_msgs/People.h>
 
@@ -16,18 +19,67 @@ class PeopleListener
     std::vector <std::vector <double>> peopleLocations;
 
   public:
-    // return vector of people locations
-    std::vector <std::vector <double>> getPeopleLocations ();
+    std::vector <std::vector <double>> getPeopleLocations ()
+    {
+      return sortByReliability ();
+    }
 
-    // sort the vector of people from least reliable to most reliable
-    std::vector <std::vector <double>> sortByReliability ();
+    std::vector <std::vector <double>> sortByReliability ()
+    {
+      // if peopleLocations has items
+      if (peopleLocations.size () > 0)
+      {
+        //ROS_INFO ("people present, sorting...");
 
-    // set coordinates and reliability of person
-    void setPersonLocation (double x, double y, double r);
+        // copy the vector of people locations
+        std::vector <std::vector <double>> reliabilitySorted = peopleLocations;
 
-    // receieve and people message
-    void peopleCallback (const people_msgs::People::ConstPtr & peopleMessage);
+        // sort the copied vector
+        // https://en.cppreference.com/w/cpp/algorithm/sort
+        std::sort
+        (
+          reliabilitySorted.begin (),
+          reliabilitySorted.end (),
+          [] (const std::vector <double> & a, const std::vector <double> & b)
+          {
+            return a [2] < b [2];
+          }
+        );
 
-    // delete people location array
-    void clearLocations ();
+        return reliabilitySorted;
+      }
+
+      // if peopleLocations is empty, return a vector of zeroes
+      return std::vector <std::vector <double>> {{0, 0, 0}};
+    }
+
+    void setPersonLocation (double x, double y, double r)
+    {
+      // add to peopleLocations in push_back in format (x coordinate, y coordinate, reliability)
+      peopleLocations.push_back (std::vector <double> ({x, y, r}));
+    }
+
+    void peopleCallback (const people_msgs::People::ConstPtr & peopleMessage)
+    {
+      // clear previously stored people locations (since people move)
+      clearLocations ();
+
+      // add in new locations of people
+      for (int index = 0; index < peopleMessage -> people.size (); index += 1)
+      {
+        double x = peopleMessage -> people [index].position.x;
+        double y = peopleMessage -> people [index].position.y;
+        double r = peopleMessage -> people [index].reliability;
+
+        setPersonLocation (x, y, r);
+      }
+    }
+
+    void clearLocations ()
+    {
+      peopleLocations.clear ();
+    }
+
 };
+
+#endif

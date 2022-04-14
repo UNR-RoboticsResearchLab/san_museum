@@ -1,3 +1,6 @@
+#ifndef POSE_LISTENER_H_
+#define POSE_LISTENER_H_
+
 #include <ros/ros.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
@@ -16,15 +19,41 @@ class PoseListener
     std::vector <double> poseAMCL;
 
   public:
-    std::vector <double> getPose ();
-    // return x coordinate
-    double getPoseX ();
-    // return y coordinate
-    double getPoseY ();
+    std::vector <double> getPose ()
+    {
+      return poseAMCL;
+    }
 
-    // set coordinates
-    void setPose (double x, double y);
+    double getPoseX ()
+    {
+      // at (0) is the x coordinate
+      return poseAMCL.at (0);
+    }
 
-    // receieve and process amcl message
-    void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage);
+    double getPoseY ()
+    {
+      // at (1) is the y coordinate
+      return poseAMCL.at (1);
+    }
+
+    void setPose (double x, double y)
+    {
+      // clear the vector before pushing back
+      // this will stop the vector from becoming larger than 2 doubles (x and y coordinates)
+      poseAMCL.clear ();
+
+      // insert x coordinate
+      poseAMCL.push_back (x);
+
+      // insert y coordinate
+      poseAMCL.push_back (y);
+    }
+
+    void amclCallback (const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & AMCLmessage)
+    {
+      // set vector to current pose from amcl message
+      setPose (AMCLmessage -> pose.pose.position.x, AMCLmessage -> pose.pose.position.y);
+    }
 };
+
+#endif
