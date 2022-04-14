@@ -1,13 +1,10 @@
 #ifndef BEHAVIORS_H_
 #define BEHAVIORS_H_
 
-#include <fstream>
-
 #include <ros/ros.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <nav_msgs/GetPlan.h>
-#include <sound_play/sound_play.h>
 
 #include "PoseListener.h"
 #include "PeopleListener.h"
@@ -61,7 +58,7 @@ class Behaviors
 
       if (ac.getState () == actionlib::SimpleClientGoalState::SUCCEEDED)
       {
-       //ROS_DEBUG ("robot reached the destination");
+       //ROS_INFO ("robot reached the destination");
        return true;
       }
 
@@ -158,10 +155,11 @@ class Engaging : public Behaviors
   public:
     std::vector <double> findGoal (std::vector <double> currentCoordinates, std::vector <std::vector <double>> peopleLocations)
     {
-      // for use of the at () vector function
+      // for use with the at () vector function
       int x = 0;
       int y = 1;
 
+      // enable control of speed limit
       MovementConfigurator movementLimiter;
 
       // stores goals to be tested
@@ -172,6 +170,7 @@ class Engaging : public Behaviors
       // search for a goal
       ROS_INFO ("engaging behavior");
 
+      // set speed limit
       movementLimiter.setVelocityLimit ('x', 0.45);
 
       int index = peopleLocations.size ();
@@ -217,102 +216,6 @@ class Engaging : public Behaviors
       }
 
       return potentialGoal;
-    }
-
-  protected:
-    // code adapted from http://www.cplusplus.com/forum/general/47399/#msg274269
-    void saveLocation (std::vector <double> currentCoordinates, char locationType)
-    {
-      // for use of the at () vector function
-      int x = 0;
-      int y = 1;
-
-      std::string stationaryLine = "stationary:";
-      std::string reservedLine = "reserved:";
-
-      std::string currentLine;
-
-      // you have to write the full path or else the file path will depend on where the node is run (https://answers.ros.org/question/11642/write-to-a-file-from-a-c-ros-node/)
-      std::ofstream temporaryFile ("locationsTemporary.txt");
-      std::ifstream locationsFile ("locations.txt");
-
-      if (!locationsFile.is_open () || !temporaryFile.is_open ())
-      {
-        if (!locationsFile.is_open () && !temporaryFile.is_open ())
-        {
-          ROS_WARN ("could not open both locations.txt and locationsTemporary.txt");
-        }
-
-        else if (!locationsFile.is_open ())
-        {
-          ROS_WARN ("could not open locations.txt, creating");
-
-          // open the file for writing
-          std::ofstream locationsFileCreated ("locations.txt");
-
-          // create and set locations.txt to expected format
-          locationsFileCreated << "stationary:" << std::endl;
-          locationsFileCreated << std::endl;
-          locationsFileCreated << "reserved:" << std::endl;
-          locationsFileCreated << std::endl;
-
-          locationsFileCreated.close ();
-
-          ROS_INFO ("created locations.txt");
-
-          // reopen the file for reading
-          std::ifstream locationsFile ("locations.txt");
-        }
-
-        else
-        {
-          ROS_WARN ("could not open locationsTemporary.txt");
-        }
-
-        return;
-      }
-
-      while (getline (locationsFile, currentLine))
-      {
-        if (locationType == 's' && currentLine == stationaryLine)
-        {
-          temporaryFile << "stationary:" << std::endl;
-
-          // just to stop unwanted lines of text from appearing
-          getline (locationsFile, currentLine);
-
-          temporaryFile << "( " << currentCoordinates.at (x) << " , " << currentCoordinates.at (y) << " )" << std::endl;
-
-          ROS_INFO ("location saved for stationary behavior");
-        }
-
-        else if (locationType == 'r' && currentLine == reservedLine)
-        {
-          temporaryFile << "reserved:" << std::endl;
-
-          // we want to append to the list of reserved locations
-          getline (locationsFile, currentLine);
-
-          temporaryFile << currentLine << "( " << currentCoordinates.at (x) << ", " << currentCoordinates.at (y) << " ) " << std::endl;
-
-          ROS_INFO ("location saved for reserved behavior");
-        }
-
-        // this means that the current line is not be what we want to modify
-        else
-        {
-          temporaryFile << currentLine << std::endl;
-        }
-      }
-
-      temporaryFile.close ();
-      locationsFile.close ();
-
-      remove ("locations.txt");
-
-      rename ("locationsTemporary.txt", "locations.txt");
-
-      return;
     }
 };
 
@@ -369,11 +272,6 @@ class Conservative : public Behaviors
 
       return potentialGoal;
     }
-
-  /*
-  protected:
-    void saveLocation (std::vector <double> currentCoordinates, char locationType);
-  */
 };
 
 class Reserved : public Behaviors
@@ -444,67 +342,6 @@ class Reserved : public Behaviors
 
       return potentialGoal;
     }
-
-  /*
-  protected:
-    std::vector <std::vector <double>> loadLocations ()
-    {
-      std::vector <std::vector <double>> locations;
-
-      // for use of the at () vector function
-      int x = 0;
-      int y = 1;
-
-      std::string reservedLine = "reserved:";
-
-      std::string currentLine;
-
-      std::ifstream locationsFile ("locations.txt");
-
-      if (!locationsFile.is_open ())
-      {
-        ROS_WARN ("could not open locations.txt");
-
-        return locations;
-      }
-
-      while (getline (locationsFile, currentLine))
-      {
-        if (currentLine == reservedLine)
-        {
-          std::cout << "found line \"reserved:\"" << std::endl;
-          // go to the next line, that one has the coordinates
-          getline (locationsFile, currentLine);
-
-          // create a stream so the string can be properly evaluated
-          std::stringstream currentLineStream;
-          currentLineStream >> currentLine;
-
-          // every coordinate found in the file will be stored here
-          std::vector <double> coordinates;
-
-          // loop until end of string
-          while (!currentLineStream.eof ())
-          {
-
-          }
-
-          // there should always be an even number of coordinates so this shouldnt break
-          for (int index = 0; index < coordinates.size (); index += 2)
-          {
-            //std::vector <double> location = {coordinates.at (index), coordinates.at (index + 1)};
-            //locations.push_back (location);
-          }
-
-          locationsFile.close ();
-
-          ROS_INFO ("reserved locations loaded");
-        }
-      }
-
-      return locations;
-    }
-  */
 };
 
 class Stationary : public Behaviors
@@ -539,9 +376,6 @@ class Stationary : public Behaviors
       ROS_INFO ("checking goal ...");
       goalIsOk = checkGoal (currentCoordinates, potentialGoal, 0.33);
 
-      // play sound here
-      //sound.playWave ("file location");
-
       // if no path to stationary location is available
       if (!goalIsOk)
       {
@@ -553,11 +387,6 @@ class Stationary : public Behaviors
 
       return potentialGoal;
     }
-
-  /*
-  protected:
-    std::vector <std::vector <double>> loadLocations ();
-  */
 };
 
 #endif
